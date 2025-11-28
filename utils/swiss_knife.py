@@ -35,13 +35,13 @@ def find_ordinal_text(ordinal: str):
     return '4th'  # Possible maximum branch is 4.
 
 
-def assist_insurance_checkbox(non_bj_hands_list: list[str], hands_dict: dict[str]):
+def assist_insurance_checkbox(non_bj_hands_list: list[str], hands_dict: dict):
     """
     Assist in creating options for insurance checkbox.
 
     Parameters:
         non_bj_hands_list (list[str]): list of non-Blackjack hands.
-        hands_dict (dict[str]): dictionary of hands.
+        hands_dict (dict): dictionary of hands.
 
     Returns:
         list: list of options for insurance checkbox.
@@ -70,13 +70,13 @@ def find_ordinal(insurance_hands_list: list[str]):
     return [head_ordinal.split(' ')[1][:-1] for head_ordinal in insurance_hands_list]
 
 
-def find_placed_insurance(insurance_hands_list: list[str], hands_dict: dict[str]):
+def find_placed_insurance(insurance_hands_list: list[str], hands_dict: dict):
     """
     Find total insurance placed for each hand. Placed insurance is half initial chips.
 
     Parameters:
         insurance_hands_list (list[str]): list of hands that have insurance.
-        hands_dict (dict[str]): dictionary of hands.
+        hands_dict (dict): dictionary of hands.
 
     Returns:
         int: total insurance placed.
@@ -105,12 +105,12 @@ def find_value_color(value: int, soft: bool, bust: bool):
     return VALUES_COLORS['safe']
 
 
-def find_total_bets(hands_dict: dict[str], insurance_hands_list: list[str]):
+def find_total_bets(hands_dict: dict, insurance_hands_list: list[str]):
     """
     Find total bets placed in each round.
 
     Parameters:
-        hands_dict (dict[str]): dictionary of hands.
+        hands_dict (dict): dictionary of hands.
         insurance_hands_list (list[str]): list of hands that have insurance.
 
     Returns:
