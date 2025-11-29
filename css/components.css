@@ -1,0 +1,72 @@
+
+/*Home page buttons.*/
+.menu-btn {
+    padding: 10px 20px;
+    background: #e8e8e8;
+    border: 5px solid #999;
+    border-radius: 20px;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: "Patrick Hand", sans-serif;
+    transition: 0.2s;
+}
+
+.menu-btn:hover {
+    background: #dcdcdc;
+    transform: translateY(-3px);
+}
+
+.form-section {
+  width: 95%;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 30px;
+  border: 3px solid #333;
+  border-radius: 18px;
+  font-family: "Patrick Hand", sans-serif;
+  font-size: 24px;
+}
+
+.form-label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 6px;
+  font-size: 28px;
+}
+
+.form-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 24px;
+  padding: 15px 20px;
+  border: 3px solid #333;
+  border-radius: 12px;
+  font-family: "Patrick Hand", sans-serif;
+  margin-bottom: 15px;
+}
+
+
+.form-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.form-btn {
+  padding: 10px 40px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-family: "Patrick Hand", sans-serif;
+  border: none;
+  cursor: pointer;
+}
+
+.submit-btn {
+  background: #333;
+  color: white;
+}
+
+.reset-btn {
+  background: #ffd44d;
+  color: #333;
+}
