@@ -5,12 +5,18 @@ from configs.rules_config import MIN_BET, MAX_CAPITAL
 
 
 DEFAULT_PLAYER_NAME = "💸Benji Bucket🪣"  # If player doesn't enter name.
+MAX_NAME_LEN = 50  # Maximal player name length.
 
 
 HOME_CONFIG = {
     "title": "🎰JOB's Here",
 
     "name": "♠️♥️Jack's Online Blackjack♦️♣️",
+
+    "default_player_name": DEFAULT_PLAYER_NAME,
+    "max_name_len": MAX_NAME_LEN,
+    "min_bet": MIN_BET,
+    "max_capital": MAX_CAPITAL,
 
     "intro_button": {
         "label": "🎠Intro Page🎙️",
@@ -51,8 +57,19 @@ HOME_CONFIG = {
         "holder": f"Would like to know your name, or we'll call you {DEFAULT_PLAYER_NAME}"
     },
 
+    "player_name_alert": {
+        "min_error": f"Name must contain at least one alphabet, number or special character.",
+        "max_error": f"Name length must <= {str(MAX_NAME_LEN)}."
+    },
+
     "capital_input": {
         "label": "💰Cash in your capital, please:",
-        "holder": f"Please be integer. Available range: {str(MIN_BET)} to {str(MAX_CAPITAL)}."
+        "holder": f"Please enter integer. Available range: {str(MIN_BET)} to {str(MAX_CAPITAL)}."
+    },
+
+    "capital_alert": {
+        "int_error": "Please enter positive integer.",
+        "min_error": f"Capital must >= minimum bet {str(MIN_BET)}.",
+        "max_error": f"Capital must <= maximum capital {str(MAX_CAPITAL)}."
     }
 }

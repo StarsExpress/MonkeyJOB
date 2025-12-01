@@ -6,9 +6,9 @@
     <title></title>
 
     <!-- CSS. -->
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="../static/css/base.css">
+    <link rel="stylesheet" href="../static/css/layout.css">
+    <link rel="stylesheet" href="../static/css/components.css">
 
     <style>
         /* Popup overlay. */
@@ -137,14 +137,26 @@
 
 </section>
 
-
 <!-- JS. -->
 <script type="module">
-    import {loadHomeConfig} from "./js/api.js";
+    let HOME_CONFIG = {};  // Store home page config data.
+
+    import {loadHomeConfig} from "/static/js/api.js";
+    import {
+        openRulesModal, closeRulesModal, openIncomeModal, closeIncomeModal, switchRulesLang
+    } from "/static/js/modals.js";
+
+    // Send global functions to window.
+    window.openRulesModal = openRulesModal;
+    window.closeRulesModal = closeRulesModal;
+    window.openIncomeModal = openIncomeModal;
+    window.closeIncomeModal = closeIncomeModal;
+    window.switchRulesLang = switchRulesLang;
 
     /* -------- Initialize frontend w/ Python config. -------- */
     async function initHomePage() {
         const cfg = await loadHomeConfig();
+        HOME_CONFIG = cfg.json;
 
         document.title = cfg.title;
         document.getElementById("pageName").innerHTML = cfg.name;
@@ -191,37 +203,50 @@
 
         document.getElementById("capitalLabel").innerHTML = cfg.capital_input.label;
         document.getElementById("inputCapital").placeholder = cfg.capital_input.holder;
+
+        document.getElementById("submitPlayerBtn").addEventListener("click", () => {
+            let name = document.getElementById("inputPlayerName").value.trim();
+            let capital = document.getElementById("inputCapital").value;
+
+            if (!validateInput(name, capital)) return;
+            window.location.href = "/game"; // Jump to game.html.
+        });
+
+        document.getElementById("resetPlayerBtn").addEventListener("click", () => { // Reset player's input.
+            document.getElementById("inputPlayerName").value = "";
+            document.getElementById("inputCapital").value = "";
+        });
+    }
+
+    function validateInput(name, capital) {
+        name = name.trim(); // Remove leading and trailing spaces.
+        if (name.length <= 0) {
+            alert(HOME_CONFIG.player_name_alert.min_error);
+            return false;
+        }
+        if (name.length > HOME_CONFIG.max_name_len) {
+            alert(HOME_CONFIG.player_name_alert.max_error);
+            return false;
+        }
+
+        capital = Number(capital);
+        if (!Number.isInteger(capital)) {
+            alert(HOME_CONFIG.capital_alert.int_error);
+            return false;
+        }
+        if (capital < HOME_CONFIG.min_bet) {
+            alert(HOME_CONFIG.capital_alert.min_error);
+            return false;
+        }
+        if (capital > HOME_CONFIG.max_capital) {
+            alert(HOME_CONFIG.capital_alert.max_error);
+            return false;
+        }
+
+        return true;
     }
 
     initHomePage();
-</script>
-
-<!-- Global modal functions. -->
-<script>
-    function openRulesModal() {
-        document.getElementById("rulesModal").style.display = "flex";
-    }
-
-    function closeRulesModal() {
-        document.getElementById("rulesModal").style.display = "none";
-    }
-
-    function openIncomeModal() {
-        document.getElementById("incomeModal").style.display = "flex";
-    }
-
-    function closeIncomeModal() {
-        document.getElementById("incomeModal").style.display = "none";
-    }
-
-    async function switchRulesLang(label) {
-        let language = "english";
-        if (label.includes("繁體")) language = "traditional";
-        if (label.includes("简体")) language = "simplified";
-
-        const rules = await fetch(`http://127.0.0.1:8080/api/rules/${language}`); // Must use backticks.
-        document.getElementById("rulesContent").innerText = await rules.text();
-    }
 </script>
 
 </body>
