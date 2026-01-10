@@ -1,7 +1,7 @@
 """All home configurations."""
 import os
 from configs.paths_config import APP_BASE_PATH
-from configs.rules_config import MIN_BET, MAX_CAPITAL
+from configs.rules_config import MIN_BET, MAX_CAPITAL, MAX_BETS_NUM
 
 
 DEFAULT_PLAYER_NAME = "💸Benji Bucket🪣"  # If player doesn't enter name.
@@ -17,6 +17,7 @@ HOME_CONFIG = {
     "max_name_len": MAX_NAME_LEN,
     "min_bet": MIN_BET,
     "max_capital": MAX_CAPITAL,
+    "max_bets_num": MAX_BETS_NUM,
 
     "intro_button": {
         "label": "🎠Intro Page🎙️",
