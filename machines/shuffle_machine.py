@@ -41,12 +41,12 @@ class ShuffleMachine:
             tuple: tuple of drawn card(s) and suit(s).
         """
         if two_cards:
-            card_1 = self.cards_list.pop(0)
-            card_2 = self.cards_list.pop(0)
+            card_1 = self.cards_list.pop()
+            card_2 = self.cards_list.pop()
             suit_1 = self.suits_dict[card_1].pop(random.randrange(len(self.suits_dict[card_1])))
             suit_2 = self.suits_dict[card_2].pop(random.randrange(len(self.suits_dict[card_2])))
             return card_1, card_2, suit_1, suit_2
 
-        card = self.cards_list.pop(0)
+        card = self.cards_list.pop()
         suit = self.suits_dict[card].pop(random.randrange(len(self.suits_dict[card])))
         return card, suit

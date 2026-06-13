@@ -1,6 +1,6 @@
 import os
 from PIL import Image
-from configs.paths_config import IMAGES_FOLDER_PATH
+from configs.paths_config import IMAGES_FOLDER_PATH, RULES_PATHS_DICT
 
 
 def read_cards_images():
@@ -22,3 +22,17 @@ def read_cards_images():
                 }
             )
     return images_dict
+
+
+def read_rules():
+    """
+    Read rules of available languages from rules folder.
+
+    Returns:
+        dict: dict where keys are language names and values are corresponding rules.
+    """
+    rules_dict = {}
+    for key in RULES_PATHS_DICT.keys():
+        with open(RULES_PATHS_DICT[key], "r", encoding="UTF-8") as file:
+            rules_dict.update({key: file.read()})
+    return rules_dict

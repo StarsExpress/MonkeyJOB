@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack's Blackjack</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- SESSION SETUP OVERLAY -->
+<div class="session-overlay" id="session-overlay">
+  <div class="session-card">
+    <h2>♠ Jack's Blackjack</h2>
+    <div class="session-field">
+      <label>Your Name (optional)</label>
+      <input type="text" id="player-name" placeholder="What shall we call you?" maxlength="50">
+    </div>
+    <div class="session-field">
+      <label>Cash-In Capital ($)</label>
+      <input type="number" id="player-capital" placeholder="e.g. 10000" min="300" step="100">
+    </div>
+    <div class="session-error" id="session-error"></div>
+    <button class="session-submit" onclick="submitSession()">Enter Table</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-title">♠ Jack's Blackjack</div>
+  <div class="topbar-balance">Balance &nbsp;<span id="balance">$0</span></div>
+  <nav class="topbar-nav">
+    <button class="nav-btn" onclick="showIncome()">Statement</button>
+    <button class="nav-btn" onclick="newSession()">New Session</button>
+  </nav>
+</header>
+
+<!-- TABLE -->
+<main class="table" id="table">
+
+  <!-- DEALER -->
+  <section class="dealer-zone">
+    <div class="zone-label">Dealer</div>
+    <div class="dealer-hand" id="dealer-hand"></div>
+    <div class="dealer-value-badge" id="dealer-val">—</div>
+  </section>
+
+  <!-- PLAYER -->
+  <section class="player-zone">
+    <div class="zone-label" style="margin-bottom:10px;">Your Hands</div>
+    <div class="hands-row" id="hands-row"></div>
+  </section>
+
+  <!-- MSG OVERLAY -->
+  <div class="msg-overlay" id="msg-overlay"></div>
+
+  <!-- INSURANCE BANNER (auto-declined server-side, reserved) -->
+  <div class="insurance-banner" id="ins-banner" style="display:none;">
+    <span>Dealer shows Ace — take insurance?</span>
+    <button class="ins-btn ins-yes">Yes</button>
+    <button class="ins-btn ins-no">No thanks</button>
+  </div>
+
+</main>
+
+<!-- ACTION ZONE -->
+<footer class="action-zone">
+
+  <!-- Phase: Betting -->
+  <div id="phase-betting" style="display:none; flex-direction:column; gap:8px;">
+
+    <!-- Row 1: hand count selector -->
+    <div class="hands-selector-row">
+      <span class="chips-label">Hands</span>
+      <div class="hands-btns" id="hands-count-btns"></div>
+    </div>
+
+    <!-- Row 2: per-hand selector (hidden when numHands == 1) -->
+    <div class="hand-sel-row" id="hand-sel-row" style="display:none;">
+      <div id="hand-sel-btns"></div>
+    </div>
+
+    <!-- Row 3: bet error -->
+    <div class="bet-error" id="bet-error"></div>
+
+    <!-- Row 4: chips + keyboard input + controls -->
+    <div class="chips-row">
+      <span class="chips-label">Bet</span>
+      <div class="chip c25"   onclick="addBet(25)">25</div>
+      <div class="chip c100"  onclick="addBet(100)">100</div>
+      <div class="chip c500"  onclick="addBet(500)">500</div>
+      <div class="chip c1000" onclick="addBet(1000)">1K</div>
+      <div class="manual-bet-wrap">
+        <input type="number" id="manual-bet" class="manual-bet-input" placeholder="300–10000" min="300" max="10000" step="100">
+        <button class="bet-add-btn" onclick="confirmManualBet()" title="Add amount">+</button>
+      </div>
+      <div class="bet-display" id="bet-display">$0</div>
+      <button class="bet-clear" onclick="clearBet()">Clear</button>
+      <button class="action-btn btn-deal" onclick="deal()" style="margin-left:12px;">Deal</button>
+    </div>
+  </div>
+
+  <!-- Phase: Early Pay -->
+  <div id="phase-early-pay" style="display:none;">
+    <div class="early-pay-panel">
+      <div class="early-pay-info" id="early-pay-info">
+        <strong>Blackjack!</strong> Dealer shows a face card.
+      </div>
+      <div class="actions-row">
+        <button class="action-btn btn-stand"  onclick="doEarlyPay('take')" id="btn-early-take">Take Early Pay (+$—)</button>
+        <button class="action-btn btn-double" onclick="doEarlyPay('wait')" id="btn-early-wait">Wait for ×1.5</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase: Playing -->
+  <div id="phase-playing" style="display:none;">
+    <div class="actions-row">
+      <button class="action-btn btn-hit"    id="btn-hit"    onclick="doHit()">Hit</button>
+      <button class="action-btn btn-stand"  id="btn-stand"  onclick="doStand()">Stand</button>
+      <button class="action-btn btn-double" id="btn-double" onclick="doDouble()">Double</button>
+      <button class="action-btn btn-split"  id="btn-split"  onclick="doSplit()">Split</button>
+      <button class="action-btn btn-sur"    id="btn-sur"    onclick="doSurrender()">Surrender</button>
+    </div>
+  </div>
+
+  <!-- Phase: Settled -->
+  <div id="phase-settled" style="display:none;">
+    <div class="actions-row">
+      <button class="action-btn btn-next"    onclick="nextRound()">Next Round</button>
+      <button class="action-btn btn-new-ses" onclick="newSession()">New Session</button>
+    </div>
+  </div>
+
+</footer>
+
+<!-- INCOME MODAL -->
+<div class="income-modal hidden" id="income-modal" onclick="hideIncome()">
+  <div class="income-card" onclick="event.stopPropagation()">
+    <h3>Income Statement</h3>
+    <table class="income-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Round</th>
+          <th>Profit</th>
+          <th>Capital</th>
+        </tr>
+      </thead>
+      <tbody id="income-table-body"></tbody>
+    </table>
+    <button class="income-close" onclick="hideIncome()">Close</button>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
