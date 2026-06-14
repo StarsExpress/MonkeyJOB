@@ -14,7 +14,7 @@ class Player:
 
     def __init__(self):
         """Initialize a new instance of Player class."""
-        self.hands_dict = {}
+        self.hands_dict: dict[str, HandProcessor] = dict()
 
     def prepare(self, chips_list: list[int], cards_and_suits_list: list[list[str]]):
         """
@@ -26,15 +26,15 @@ class Player:
         """
         self.hands_dict.clear()  # Clear dictionaries before loading values.
 
-        for i in range(len(chips_list)):
+        for idx, chips in enumerate(chips_list):
             self.hands_dict.update(
                 {
-                    str(i + 1): HandProcessor(
-                        str(i + 1),
-                        chips_list[i],
-                        cards_and_suits_list[i][:2],  # First 2 items are cards.
-                        cards_and_suits_list[i][-2:],  # Last 2 items are suits.
+                    str(idx + 1): HandProcessor(
+                        str(idx + 1),
+                        chips,
+                        cards_and_suits_list[idx][:2],  # First 2 items are cards.
+                        cards_and_suits_list[idx][-2:],  # Last 2 items are suits.
                     )
                 }
             )
-            self.hands_dict[str(i + 1)].display_properties()
+            self.hands_dict[str(idx + 1)].display_properties()

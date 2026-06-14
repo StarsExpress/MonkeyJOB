@@ -6,6 +6,7 @@ from utils.judges import judge_blackjack, judge_surrender, judge_split
 
 class TestJudges(unittest.TestCase):
     """Test functionality of functions in judges.py."""
+
     @parameterized.expand([
         (["10", "A"], False, True),
         (["10", "A"], True, False),
