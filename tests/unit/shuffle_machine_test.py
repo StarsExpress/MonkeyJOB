@@ -6,6 +6,7 @@ from machines.shuffle_machine import ShuffleMachine
 
 class TestShuffleMachine(unittest.TestCase):
     """Test methods of ShuffleMachine class."""
+
     def setUp(self) -> None:
         """Store shuffle machine in the test class."""
         self.machine = ShuffleMachine()

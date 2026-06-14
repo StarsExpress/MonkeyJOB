@@ -2,7 +2,7 @@ from configs.cards_config import CARD_TO_VALUE_DICT
 from configs.hands_config import MAX_TOTAL_VALUE, MIN_DEALER_VALUE
 
 
-def update_properties(cards_list: list[str]):
+def update_properties(cards_list: list[str]) -> tuple[int, bool, bool]:
     """
     Update properties of a hand based on given list of cards.
 
@@ -10,7 +10,7 @@ def update_properties(cards_list: list[str]):
         cards_list (list[str]): list of cards in given hand.
 
     Returns:
-        tuple: tuple of hand value, a boolean telling if hand is soft,
+        tuple[int, bool, bool]: tuple of hand value, a boolean telling if hand is soft,
                and a boolean telling if hand is busted.
     """
     soft = False
@@ -36,7 +36,7 @@ def track_display_value(
     stand: bool = False,
     soft: bool = False,
     bust: bool = False,
-):
+) -> str:
     """
     Track hand value to be displayed on game page.
 
