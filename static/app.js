@@ -579,6 +579,15 @@ async function _loadRules(lang) {
   contentEl.innerHTML = html;
 }
 
+// ── GitHub modal ───────────────────────────────────────────────────────────────
+function showGitHub() {
+  document.getElementById('github-modal').style.display = 'flex';
+}
+
+function hideGitHub() {
+  document.getElementById('github-modal').style.display = 'none';
+}
+
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   // bet-display handled via its own listeners in DOMContentLoaded
@@ -612,6 +621,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close rules modal via the X button.
   document.getElementById('rules-close-btn').addEventListener('click', hideRules);
+
+  // Close GitHub modal when clicking the backdrop or the X button.
+  document.getElementById('github-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) hideGitHub();
+  });
+  document.getElementById('github-close-btn').addEventListener('click', hideGitHub);
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────────
