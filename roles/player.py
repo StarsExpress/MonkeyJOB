@@ -12,11 +12,11 @@ class Player:
         prepare(chips_list: list[int], cards_and_suits_list: list[list[str]]): load cards for new round.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize a new instance of Player class."""
         self.hands_dict: dict[str, HandProcessor] = dict()
 
-    def prepare(self, chips_list: list[int], cards_and_suits_list: list[list[str]]):
+    def prepare(self, chips_list: list[int], cards_and_suits_list: list[list[str]]) -> None:
         """
         Prepare player's hands for a new round.
 

@@ -26,7 +26,7 @@ class RoundRequest(BaseModel):
 
 
 class EarlyPayRequest(BaseModel):
-    choice: str  # "take" | "wait"
+    choice: str  # Take or wait.
 
 
 @app.post("/session/new")
