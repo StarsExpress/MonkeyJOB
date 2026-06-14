@@ -497,6 +497,148 @@ class TestSplit(unittest.TestCase):
         self.assertIn("split", result["moves"])
 
 
+class TestInsurance(unittest.TestCase):
+    """Insurance phase: dealer shows Ace, player may bet against dealer blackjack."""
+
+    def setUp(self):
+        self.app = Application()
+        self.app.new_session("Alice", 10000)
+
+    def test_insurance_phase_against_dealer_ace(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),            # Dealer 1st card is A.
+                 ('7', '8', 'D', 'H'),  # Player doesn't have BJ.
+             ]):
+
+            result = self.app.start_round([500])
+
+        self.assertEqual(result["phase"], "insurance")
+
+    def test_insurance_hands(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),
+                 ('7', '8', 'D', 'H'),
+             ]):
+            result = self.app.start_round([500])
+
+        self.assertEqual(len(result["insurance_hands"]), 1)
+        self.assertEqual(result["insurance_hands"][0]["hand_id"], "1")
+        self.assertEqual(result["insurance_hands"][0]["insurance_amount"], 250)  # 500 / 2.
+
+    def test_capital_deduction(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),
+                 ('7', '8', 'D', 'H'),
+             ]):
+
+            self.app.start_round([500])
+
+        self.app.make_insurance_decision(['1'])
+        self.assertEqual(self.app.capital, 9250)  # 9500 - 250.
+
+    def test_no_insurance_capital(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),
+                 ('7', '8', 'D', 'H'),
+             ]):
+
+            self.app.start_round([500])
+
+        self.app.make_insurance_decision([])
+        self.assertEqual(self.app.capital, 9500)
+
+    def test_phase_after_insurance_decision(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),
+                 ('7', '8', 'D', 'H'),
+             ]):
+
+            self.app.start_round([500])
+
+        result = self.app.make_insurance_decision(['1'])
+        self.assertEqual(result["phase"], "playing")
+
+    def test_insurance_pays_2_to_1_against_dealer_blackjack(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),            # Dealer 1st card is A.
+                 ('10', '8', 'D', 'H'),  # Player doesn't have BJ and buys insurance.
+                 ('10', 'C'),           # Dealer draws 10: Ace + 10 = Blackjack.
+             ]):
+
+            self.app.start_round([500])
+            self.app.make_insurance_decision(['1'])
+            result = self.app.stand()
+
+        # 10000 - 500 (bet) - 250 (insurance) = 9250.
+        # Bet was lost.
+        # Insurance won so returned money is 250 * (1 + 2) = 750. Insurance profit pays 2:1.
+        # 9250 + 750 = 10000.
+
+        self.assertEqual(self.app.capital, 10000)
+        self.assertEqual(result["phase"], "settled")
+
+    def test_lost_hand_against_dealer_blackjack(self):
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),
+                 ('7', '8', 'D', 'H'),
+                 ('10', 'C'),
+             ]):
+
+            self.app.start_round([500])
+            self.app.make_insurance_decision(['1'])
+            result = self.app.stand()
+
+        self.assertEqual(result["hands"][0]["branches"][0]["outcome"], "lost")
+
+    def test_lost_insurance_when_dealer_has_no_blackjack(self):
+        with (
+            patch.object(self.app.machine, "load_and_shuffle"),
+            patch.object(
+                self.app.machine,
+                "draw",
+                side_effect=[
+                    ("A", "S"),  # Dealer 1st card is A.
+                    ("7", "8", "D", "H"),  # Player doesn't have BJ and buys insurance.
+                    ("9", "C"),  # Dealer draws 9: A + 9. No BJ.
+                ],
+            ),
+        ):
+            
+            self.app.start_round([500])
+            self.app.make_insurance_decision(['1'])
+            result = self.app.stand()
+
+        # 10000 - 500 (bet) - 250 (insurance) = 9250.
+        # Bet and insurance were all lost.
+
+        self.assertEqual(self.app.capital, 9250)
+        self.assertEqual(result["phase"], "settled")
+
+    def test_insurance_skipped_when_all_hands_are_blackjack(self):
+        """Dealer shows Ace but all player hands are BJ: goes to early pay, not insurance."""
+        with patch.object(self.app.machine, 'load_and_shuffle'), \
+             patch.object(self.app.machine, 'draw', side_effect=[
+                 ('A', 'S'),            # Dealer 1st card is Ace.
+                 ('A', 'K', 'D', 'H'),  # Player has Blackjack.
+             ]):
+
+            result = self.app.start_round([500])
+
+        self.assertEqual(result["phase"], "early_pay")
+        self.assertNotIn("insurance_hands", result)
+
+    def test_make_insurance_decision_errors_outside_insurance_phase(self):
+        result = self.app.make_insurance_decision(['1'])
+        self.assertIn("error", result)
+
+
 class TestMultipleRounds(unittest.TestCase):
     """Capital and round counter carry over across consecutive rounds."""
 

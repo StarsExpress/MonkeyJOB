@@ -29,6 +29,10 @@ class EarlyPayRequest(BaseModel):
     choice: str  # Take or wait.
 
 
+class InsuranceRequest(BaseModel):
+    insured_hands: list[str]  # Hand ordinals that buy insurance.
+
+
 @app.post("/session/new")
 def new_session(req: SessionRequest):
     return game.new_session(req.player_name, req.capital)
@@ -42,6 +46,11 @@ def start_round(req: RoundRequest):
 @app.post("/round/early_pay")
 def early_pay(req: EarlyPayRequest):
     return game.make_early_pay_decision(req.choice)
+
+
+@app.post("/round/insurance")
+def insurance(req: InsuranceRequest):
+    return game.make_insurance_decision(req.insured_hands)
 
 
 @app.post("/round/hit")

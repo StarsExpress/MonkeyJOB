@@ -817,6 +817,57 @@ body {
 .rules-content p { margin: 0 0 0.85em; }
 .rules-content p:last-child { margin-bottom: 0; }
 
+/* ── INSURANCE PHASE PANEL ── */
+.insurance-phase-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.insurance-phase-info {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: var(--ivory-dim);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.insurance-phase-info strong {
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+}
+.insurance-toggles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ins-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 18px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(201,168,76,0.25);
+  background: rgba(0,0,0,0.2);
+  color: var(--ivory-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ins-toggle-btn:hover { border-color: var(--gold-dim); color: var(--ivory); }
+.ins-toggle-btn.selected {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  color: var(--gold);
+}
+.ins-toggle-amount {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 /* ── GITHUB MODAL ── */
 .github-modal {
   position: fixed;

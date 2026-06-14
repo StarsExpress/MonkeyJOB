@@ -138,7 +138,14 @@ class Application:
     # ── Internal phase init ────────────────────────────────────────────────────
 
     def _init_play_phase(self):
-        """Called after all early-pay decisions are made. Routes to play or close out."""
+        """Called after all early-pay decisions are made. Routes to insurance, play, or close out."""
+        if self._non_bj_hands and self._dealer_cards[0] == 'A':
+            self._phase = "insurance"
+            return
+        self._start_playing_or_close()
+
+    def _start_playing_or_close(self):
+        """Routes to play phase or closes out. Called after insurance decision (or skipped)."""
         if self._non_bj_hands:
             self._phase = "playing"
             self._active_hand = self._non_bj_hands[0]
@@ -156,8 +163,23 @@ class Application:
             self._active_branch = None
             self._dealer_reveal()
         else:
-            # All hands resolved without needing dealer — close out immediately
             self._close_round()
+
+    # ── Insurance ──────────────────────────────────────────────────────────────
+
+    def make_insurance_decision(self, insured_hands: list[str]) -> dict:
+        if self._phase != "insurance":
+            return {"error": "Not in insurance phase."}
+
+        for hid in insured_hands:
+            if hid in self.player.hands_dict and hid in self._non_bj_hands:
+                hand = self.player.hands_dict[hid]
+                amount = hand.initial_chips // 2
+                hand.insurance = amount
+                self.capital -= amount
+
+        self._start_playing_or_close()
+        return self._serialize()
 
     # ── Player moves ───────────────────────────────────────────────────────────
 
@@ -386,6 +408,11 @@ class Application:
                 self.capital += payout
                 self._profits[key] = profit
 
+        # Settle insurance: pays 2:1 (stake + 2× profit) if dealer has blackjack, otherwise already lost.
+        for hid, hand in self.player.hands_dict.items():
+            if hand.insurance > 0 and self._dealer_blackjack:
+                self.capital += hand.insurance * 3
+
         self._close_round()
 
     def _close_round(self):
@@ -514,6 +541,15 @@ class Application:
             result["active_branch"] = self._active_branch
             result["moves"] = self._available_moves()
 
+        if self._phase == "insurance":
+            result["insurance_hands"] = [
+                {
+                    "hand_id": hid,
+                    "insurance_amount": self.player.hands_dict[hid].initial_chips // 2,
+                }
+                for hid in self._non_bj_hands
+            ]
+
         if self._phase == "early_pay" and self._bj_early_pay_queue:
             pending = self._bj_early_pay_queue[0]
             result["early_pay_hand"] = pending
@@ -530,8 +566,8 @@ class Application:
         return "active" if is_active else "idle"
 
     def _dealer_value_text(self) -> str:
-        if self._phase in ("playing", "early_pay"):
-            return self._dealer_cards[0]  # Show only up-card rank, e.g. "J"
+        if self._phase in ("playing", "early_pay", "insurance"):
+            return self._dealer_cards[0]  # Show only up-card rank, e.g. "A"
         if len(self._dealer_cards) == 1:
             return self._dealer_cards[0]  # Dealer didn't draw — all hands self-resolved
         if self._dealer_blackjack:

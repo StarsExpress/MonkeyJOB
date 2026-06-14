@@ -277,6 +277,9 @@ async function updateUI(data) {
     } else if (data.phase === 'early_pay') {
       showPhase('early-pay');
       renderEarlyPayInfo(data.early_pay_hand, data.early_pay_chips);
+    } else if (data.phase === 'insurance') {
+      showPhase('insurance');
+      renderInsuranceToggles(data.insurance_hands);
     }
   }
 }
@@ -464,7 +467,7 @@ function renderEarlyPayInfo(handId, chips) {
 
 // ── Phase switching ────────────────────────────────────────────────────────────
 function showPhase(phase) {
-  const phases = ['betting', 'early-pay', 'playing', 'settled'];
+  const phases = ['betting', 'early-pay', 'insurance', 'playing', 'settled'];
   for (const p of phases) {
     document.getElementById(`phase-${p}`).style.display = p === phase ? 'flex' : 'none';
   }
@@ -577,6 +580,37 @@ async function _loadRules(lang) {
 
   _rulesCache[lang] = html;
   contentEl.innerHTML = html;
+}
+
+// ── Insurance phase ────────────────────────────────────────────────────────────
+const _insuranceSelected = {};
+
+function renderInsuranceToggles(insuranceHands) {
+  const container = document.getElementById('insurance-toggles');
+  container.innerHTML = '';
+
+  for (const k in _insuranceSelected) delete _insuranceSelected[k];
+
+  for (const hand of insuranceHands) {
+    _insuranceSelected[hand.hand_id] = true;  // default: all selected
+
+    const btn = document.createElement('button');
+    btn.className = 'ins-toggle-btn selected';
+    btn.dataset.hid = hand.hand_id;
+    btn.innerHTML =
+      `<span>Hand ${hand.hand_id}</span>` +
+      `<span class="ins-toggle-amount">+$${hand.insurance_amount.toLocaleString()}</span>`;
+    btn.addEventListener('click', () => {
+      _insuranceSelected[hand.hand_id] = !_insuranceSelected[hand.hand_id];
+      btn.classList.toggle('selected', _insuranceSelected[hand.hand_id]);
+    });
+    container.appendChild(btn);
+  }
+}
+
+async function doInsurance() {
+  const insured_hands = Object.keys(_insuranceSelected).filter(hid => _insuranceSelected[hid]);
+  await updateUI(await api('POST', '/round/insurance', { insured_hands }));
 }
 
 // ── GitHub modal ───────────────────────────────────────────────────────────────
