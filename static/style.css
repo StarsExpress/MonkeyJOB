@@ -404,7 +404,7 @@ body {
 }
 .profit-badge.win  { color: #2ecc71; background: rgba(46,204,113,0.12); }
 .profit-badge.lose { color: var(--action-hit); background: rgba(231,76,60,0.12); }
-.profit-badge.push { color: var(--ivory-dim); background: rgba(255,255,255,0.08); }
+.profit-badge.push { color: var(--gold); background: rgba(201,168,76,0.10); }
 
 /* ── ACTION ZONE ── */
 .action-zone {

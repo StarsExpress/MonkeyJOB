@@ -270,6 +270,7 @@ async function updateUI(data) {
         const ah = data.hands.find(h => h.id === data.active_hand);
         const ab = ah && ah.branches.find(b => b.id === data.active_branch);
         if (ab) state.activeBet = ab.bet;
+        if (ab && ab.is_aces_split) { showPhase('playing'); setPlayButtons([]); return; }
       }
       showPhase('playing');
       setPlayButtons(data.moves || []);
@@ -424,7 +425,7 @@ function makeBranchEl(branch, phase, handSplits = 0) {
 
   if (branch.profit !== null && branch.profit !== undefined) {
     const pEl = document.createElement('div');
-    const sign = branch.profit >= 0 ? '+' : '';
+    const sign = branch.profit > 0 ? '+' : branch.profit < 0 ? '-' : '';
     pEl.className = 'profit-badge ' +
       (branch.profit > 0 ? 'win' : branch.profit < 0 ? 'lose' : 'push');
     pEl.textContent = sign + '$' + Math.abs(branch.profit).toLocaleString();
@@ -514,10 +515,10 @@ async function showIncome() {
     for (const row of data) {
       const tr = document.createElement('tr');
       const cls = row.Profit > 0 ? 'profit-pos' : row.Profit < 0 ? 'profit-neg' : '';
-      const sign = row.Profit >= 0 ? '+' : '';
+      const sign = row.Profit > 0 ? '+' : row.Profit < 0 ? '-' : '';
       tr.innerHTML =
         `<td>${row.Round}</td>` +
-        `<td class="${cls}">${sign}$${row.Profit.toLocaleString()}</td>` +
+        `<td class="${cls}">${sign}$${Math.abs(row.Profit).toLocaleString()}</td>` +
         `<td>$${row.Capital.toLocaleString()}</td>`;
       tbl.appendChild(tr);
     }

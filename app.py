@@ -232,9 +232,10 @@ class Application:
         if hand.aces_pair:
             rc, rs = self.machine.draw()
             hand.reload(rc, rs, self._active_branch)
-            self._advance_branch()
-
-        self._auto_skip_21()
+            self._advance_branch()   # branch 1 → branch 2
+            self._advance_branch()   # branch 2 → next hand / dealer (no player input on aces splits)
+        else:
+            self._auto_skip_21()
         return self._serialize()
 
     def surrender(self) -> dict:
@@ -487,6 +488,7 @@ class Application:
                     "outcome": outcome,
                     "danger": is_danger,
                     "profit": self._profits.get(key),
+                    "is_aces_split": hand.aces_pair,
                 })
 
             label = f"Hand {hid}" + (" · Split" if hand.splits > 0 else "")
