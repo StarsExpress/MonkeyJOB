@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jack's Blackjack</title>
+<title>🎰JOB's Here</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -12,7 +12,7 @@
 <!-- SESSION SETUP OVERLAY -->
 <div class="session-overlay" id="session-overlay">
   <div class="session-card">
-    <h2>♠ Jack's Blackjack</h2>
+    <h2>♠️♥️JOB♦️♣️<br>Jack's Online Blackjack</h2>
     <div class="session-field">
       <label>Your Name (optional)</label>
       <input type="text" id="player-name" placeholder="What shall we call you?" maxlength="50">
@@ -28,11 +28,12 @@
 
 <!-- TOP BAR -->
 <header class="topbar">
-  <div class="topbar-title">♠ Jack's Blackjack</div>
+  <div class="topbar-title">♠️♥️JOB: Jack's Online Blackjack♦️♣️</div>
   <div class="topbar-balance">Balance &nbsp;<span id="balance">$0</span></div>
   <nav class="topbar-nav">
-    <button class="nav-btn" onclick="showIncome()">Statement</button>
-    <button class="nav-btn" onclick="newSession()">New Session</button>
+    <button class="nav-btn" onclick="showRules()">👀Read Rules📖</button>
+    <button class="nav-btn" onclick="showIncome()">💰Income Statement📃</button>
+    <button class="nav-btn" onclick="newSession()">🔄Restart⓪</button>
   </nav>
 </header>
 
@@ -84,18 +85,14 @@
     <!-- Row 3: bet error -->
     <div class="bet-error" id="bet-error"></div>
 
-    <!-- Row 4: chips + keyboard input + controls -->
+    <!-- Row 4: chips + editable bet display + controls -->
     <div class="chips-row">
       <span class="chips-label">Bet</span>
-      <div class="chip c25"   onclick="addBet(25)">25</div>
-      <div class="chip c100"  onclick="addBet(100)">100</div>
-      <div class="chip c500"  onclick="addBet(500)">500</div>
-      <div class="chip c1000" onclick="addBet(1000)">1K</div>
-      <div class="manual-bet-wrap">
-        <input type="number" id="manual-bet" class="manual-bet-input" placeholder="300–10000" min="300" max="10000" step="100">
-        <button class="bet-add-btn" onclick="confirmManualBet()" title="Add amount">+</button>
-      </div>
-      <div class="bet-display" id="bet-display">$0</div>
+      <div class="chip c100"   onclick="addBet(100)">100</div>
+      <div class="chip c500"   onclick="addBet(500)">500</div>
+      <div class="chip c1000"  onclick="addBet(1000)">1K</div>
+      <div class="chip c10000" onclick="addBet(10000)">10K</div>
+      <input type="text" id="bet-display" class="bet-display" inputmode="numeric" autocomplete="off" value="$0">
       <button class="bet-clear" onclick="clearBet()">Clear</button>
       <button class="action-btn btn-deal" onclick="deal()" style="margin-left:12px;">Deal</button>
     </div>
@@ -128,8 +125,8 @@
   <!-- Phase: Settled -->
   <div id="phase-settled" style="display:none;">
     <div class="actions-row">
-      <button class="action-btn btn-next"    onclick="nextRound()">Next Round</button>
-      <button class="action-btn btn-new-ses" onclick="newSession()">New Session</button>
+      <button class="action-btn btn-next"    onclick="nextRound()">➡️Next Round🆕</button>
+      <button class="action-btn btn-new-ses" onclick="newSession()">🔄Restart⓪</button>
     </div>
   </div>
 
@@ -150,6 +147,22 @@
       <tbody id="income-table-body"></tbody>
     </table>
     <button class="income-close" onclick="hideIncome()">Close</button>
+  </div>
+</div>
+
+<!-- RULES MODAL — display toggled via JS style.display, not CSS class -->
+<div class="rules-modal" id="rules-modal" style="display:none;">
+  <div class="rules-card" id="rules-card">
+    <div class="rules-header">
+      <h3>Game Rules</h3>
+      <button class="rules-close" id="rules-close-btn">✕</button>
+    </div>
+    <div class="rules-lang-tabs">
+      <button class="lang-tab active" id="tab-english"     onclick="switchRulesLang('english')">🇺🇸 English</button>
+      <button class="lang-tab"        id="tab-traditional" onclick="switchRulesLang('traditional')">🇹🇼 繁體中文</button>
+      <button class="lang-tab"        id="tab-simplified"  onclick="switchRulesLang('simplified')">🇨🇳 简体中文</button>
+    </div>
+    <div class="rules-content" id="rules-content"></div>
   </div>
 </div>
 

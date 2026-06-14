@@ -6,6 +6,7 @@ from configs.rules_config import (
     MIN_BET, MAX_BET, BLACKJACK_PAY, MIN_DEALER_VALUE, MAX_TOTAL_VALUE,
 )
 from configs.input_config import DEFAULT_PLAYER_NAME, HANDS_DICT
+from configs.output_config import DANGER_ZONE
 
 
 class Application:
@@ -98,7 +99,7 @@ class Application:
                 payout = int(hand.initial_chips * (1 + BLACKJACK_PAY))
                 self.capital += payout
                 self._profits[f"{hid}_1"] = int(hand.initial_chips * BLACKJACK_PAY)
-                self._outcomes[f"{hid}_1"] = "bj"
+                self._outcomes[f"{hid}_1"] = "bj_auto"
                 self._early_paid_hands.add(hid)
             self._init_play_phase()
         else:
@@ -144,6 +145,7 @@ class Application:
             self._phase = "playing"
             self._active_hand = self._non_bj_hands[0]
             self._active_branch = "1"
+            self._auto_skip_21()
             return
 
         # No non-BJ hands — check if any BJ hands are still waiting for dealer reveal
@@ -179,6 +181,7 @@ class Application:
                 rc, rs = self.machine.draw()
                 hand.reload(rc, rs, self._active_branch)
             self._advance_branch()
+            self._auto_skip_21()
 
         return self._serialize()
 
@@ -194,6 +197,7 @@ class Application:
             hand.reload(rc, rs, self._active_branch)
 
         self._advance_branch()
+        self._auto_skip_21()
         return self._serialize()
 
     def double_down(self) -> dict:
@@ -214,6 +218,7 @@ class Application:
             hand.reload(rc, rs, self._active_branch)
 
         self._advance_branch()
+        self._auto_skip_21()
         return self._serialize()
 
     def split(self) -> dict:
@@ -231,6 +236,7 @@ class Application:
             hand.reload(rc, rs, self._active_branch)
             self._advance_branch()
 
+        self._auto_skip_21()
         return self._serialize()
 
     def surrender(self) -> dict:
@@ -246,6 +252,18 @@ class Application:
         return self._serialize()
 
     # ── Internal navigation ────────────────────────────────────────────────────
+
+    def _auto_skip_21(self):
+        """Auto-advance past any active branch already at 21 (e.g. post-split A+10)."""
+        while self._phase == "playing" and self._active_hand and self._active_branch:
+            hand = self.player.hands_dict[self._active_hand]
+            bid = self._active_branch
+            if hand.value_dict.get(bid, 0) != MAX_TOTAL_VALUE or hand.bust_dict.get(bid, False):
+                break
+            if hand.splits > 0:
+                rc, rs = self.machine.draw()
+                hand.reload(rc, rs, bid)
+            self._advance_branch()
 
     def _advance_branch(self):
         hand = self.player.hands_dict[self._active_hand]
@@ -267,7 +285,25 @@ class Application:
 
     # ── Dealer reveal & settlement ─────────────────────────────────────────────
 
+    def _needs_dealer_draw(self) -> bool:
+        """True if at least one hand requires the dealer to draw cards."""
+        for hid, hand in self.player.hands_dict.items():
+            if hand.blackjack and hid not in self._early_paid_hands:
+                return True  # BJ hand that chose to wait needs dealer reveal
+        for hid in self._non_bj_hands:
+            hand = self.player.hands_dict[hid]
+            if hand.surrendered:
+                continue
+            for bid in hand.cards_dict:
+                if not hand.bust_dict.get(bid, False):
+                    return True  # Stood (non-bust) branch needs dealer reveal
+        return False
+
     def _dealer_reveal(self):
+        if not self._needs_dealer_draw():
+            self._settle()
+            return
+
         check_bj_only = self._all_non_bj_finished()
 
         while self._dealer_value < MIN_DEALER_VALUE:
@@ -373,7 +409,7 @@ class Application:
                 {"rank": c, "suit": s}
                 for c, s in zip(self._dealer_cards, self._dealer_suits)
             ],
-            "face_down": self._phase in ("playing", "early_pay"),
+            "face_down": False,  # Macau: dealer never deals a hole card
             "value_text": self._dealer_value_text(),
             "blackjack": self._dealer_blackjack,
             "bust": self._dealer_bust,
@@ -392,15 +428,40 @@ class Application:
                     for c, s in zip(hand.cards_dict[bid], hand.suits_dict[bid])
                 ]
 
+                branch_value = hand.value_dict.get(bid, 0)
+                is_soft = hand.soft_dict.get(bid, False)
+                is_bust = hand.bust_dict.get(bid, False)
+
+                # A branch is finalized when it no longer accepts player input:
+                # settled, busted, surrendered, doubled-down, or positionally past.
+                is_finalized = (
+                    self._phase == "settled"
+                    or is_bust
+                    or hand.surrendered
+                    or hand.double_down_dict.get(bid, False)
+                )
+                if not is_finalized and self._phase == "playing" and self._active_hand:
+                    try:
+                        hand_pos   = self._non_bj_hands.index(hid)
+                        active_pos = self._non_bj_hands.index(self._active_hand)
+                        if hand_pos < active_pos:
+                            is_finalized = True
+                        elif hand_pos == active_pos and self._active_branch:
+                            b_list = list(hand.cards_dict.keys())
+                            is_finalized = b_list.index(bid) < b_list.index(self._active_branch)
+                    except ValueError:
+                        pass
+
                 if hand.blackjack and bid == "1":
                     value_text = "Blackjack"
                 elif hand.surrendered and bid == "1":
                     value_text = "Surrender"
                 else:
                     value_text = track_display_value(
-                        hand.value_dict.get(bid, 0),
-                        soft=hand.soft_dict.get(bid, False),
-                        bust=hand.bust_dict.get(bid, False),
+                        branch_value,
+                        soft=is_soft,
+                        bust=is_bust,
+                        stand=is_finalized,
                     )
 
                 is_active = (
@@ -410,14 +471,23 @@ class Application:
                 )
                 outcome = self._outcomes.get(key, self._default_outcome(hid, bid, hand, is_active))
 
+                is_danger = (
+                    not hand.blackjack
+                    and not hand.surrendered
+                    and not is_bust
+                    and not is_soft
+                    and DANGER_ZONE["lower"] <= branch_value <= DANGER_ZONE["upper"]
+                )
+
                 branches.append({
                     "id": bid,
                     "cards": cards,
                     "value_text": value_text,
                     "bet": hand.chips_dict.get(bid, hand.initial_chips),
-                    "bust": hand.bust_dict.get(bid, False),
+                    "bust": is_bust,
                     "active": is_active,
                     "outcome": outcome,
+                    "danger": is_danger,
                     "profit": self._profits.get(key),
                 })
 
@@ -461,11 +531,14 @@ class Application:
 
     def _dealer_value_text(self) -> str:
         if self._phase in ("playing", "early_pay"):
-            return f"{self._dealer_cards[0]} + ?"
+            return self._dealer_cards[0]  # Show only up-card rank, e.g. "J"
+        if len(self._dealer_cards) == 1:
+            return self._dealer_cards[0]  # Dealer didn't draw — all hands self-resolved
         if self._dealer_blackjack:
             return "Blackjack"
         if self._dealer_bust:
-            return "Busted"
+            bust_val, _, _ = update_properties(self._dealer_cards)
+            return f"{bust_val} — Busted"
         return track_display_value(self._dealer_value, dealer=True, soft=self._dealer_soft)
 
     def _available_moves(self) -> list:

@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -71,3 +72,12 @@ def surrender():
 @app.get("/income")
 def income():
     return game.get_incomes()
+
+
+_ALLOWED_LANGS = {"english", "traditional", "simplified"}
+
+@app.get("/rules/{lang}")
+def get_rules(lang: str):
+    if lang not in _ALLOWED_LANGS:
+        return {"error": "Unknown language."}
+    return {"content": Path(f"rules/{lang}.txt").read_text(encoding="utf-8")}

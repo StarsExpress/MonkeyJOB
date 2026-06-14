@@ -28,7 +28,6 @@ class HandProcessor:
     Methods:
         display_properties(branch_ordinal: str = '1'): display properties of a branch.
         surrender(): mark hand as surrendered.
-        set_insurance_value(branch_ordinal: str = '1'): set insurance value for a branch.
         stand(branch_ordinal: str = '1'): mark a branch as committed stand.
         hit_or_double_down(card: str, suit: str, branch_ordinal: str = '1', double_down: bool = False):
         hit or double down a branch.
@@ -80,23 +79,6 @@ class HandProcessor:
     def surrender(self):
         """Mark the hand as surrendered."""
         self.surrendered = True
-
-    def set_insurance_value(self, branch_ordinal: str = '1'):
-        """
-        Set insurance value for a branch. Insurance amount is 50% of initially placed bet.
-
-        Args:
-            branch_ordinal (str, optional): ordinal of branch. Defaults to '1'.
-        """
-        self.insurance = self.chips_dict['1'] // 2
-        show_player_value(
-            self.head_ordinal,
-            branch_ordinal,
-            chips=self.chips_dict['1'],
-            insurance=self.insurance,
-            update_chips=True,
-            insurance_only=True,
-        )
 
     def stand(self, branch_ordinal: str = '1'):
         """

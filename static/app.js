@@ -12,6 +12,7 @@ const state = {
   selectedHand: 0,    // 0-indexed: which hand is currently being configured
   numHands: 1,
   phase: 'setup',
+  activeBet: 0,       // bet on the currently active branch (for optimistic Double/Split)
 };
 
 // ── API helpers ────────────────────────────────────────────────────────────────
@@ -28,8 +29,8 @@ async function submitSession() {
   const capital = parseInt(document.getElementById('player-capital').value, 10);
   const errEl   = document.getElementById('session-error');
 
-  if (!capital || capital < 300) {
-    errEl.textContent = 'Capital must be at least $300.';
+  if (!capital || capital < MIN_BET) {
+    errEl.textContent = `Capital must be at least ${MIN_BET}.`;
     return;
   }
   errEl.textContent = '';
@@ -61,8 +62,8 @@ function enterBettingPhase() {
   buildCountBtns();
   buildHandSelBtns();
   updateBetDisplay();
+  renderBalance(state.balance);  // bets reset to 0; restore full balance
   clearTable();
-  document.getElementById('manual-bet').value = '';
 }
 
 // Build the 1–6 count buttons
@@ -92,6 +93,7 @@ function selectNumHands(n) {
 
   buildHandSelBtns();
   updateBetDisplay();
+  renderBettingBalance();
   clearBetError();
 }
 
@@ -119,6 +121,7 @@ function selectBettingHand(i) {
     b.classList.toggle('selected', idx === i);
   });
   updateBetDisplay();
+  renderBettingBalance();
   clearBetError();
 }
 
@@ -127,16 +130,18 @@ function addBet(amount) {
   state.bets[state.selectedHand] += amount;
   refreshHandSelBet(state.selectedHand);
   updateBetDisplay();
+  renderBettingBalance();
 }
 
 function clearBet() {
   state.bets[state.selectedHand] = 0;
   refreshHandSelBet(state.selectedHand);
   updateBetDisplay();
+  renderBettingBalance();
 }
 
 function updateBetDisplay() {
-  document.getElementById('bet-display').textContent =
+  document.getElementById('bet-display').value =
     '$' + state.bets[state.selectedHand].toLocaleString();
 }
 
@@ -146,31 +151,31 @@ function refreshHandSelBet(i) {
   if (el) el.textContent = '$' + state.bets[i].toLocaleString();
 }
 
-// ── Keyboard bet input ─────────────────────────────────────────────────────────
-function confirmManualBet() {
-  const input = document.getElementById('manual-bet');
-  const raw = input.value.replace(/\D/g, '');  // strip non-digits
-  if (!raw) return;
-
+// ── Inline bet input commit ────────────────────────────────────────────────────
+function commitBetInput() {
+  const raw = document.getElementById('bet-display').value.replace(/\D/g, '');
+  if (!raw) { updateBetDisplay(); return; }
   const val = parseInt(raw, 10);
   if (val < MIN_BET) {
-    showBetError(`Minimum input is $${MIN_BET.toLocaleString()}.`);
+    showBetError(`Minimum bet is $${MIN_BET.toLocaleString()}.`);
+    updateBetDisplay();
     return;
   }
   if (val > MAX_BET) {
-    showBetError(`Maximum input is $${MAX_BET.toLocaleString()}.`);
+    showBetError(`Maximum bet is $${MAX_BET.toLocaleString()}.`);
+    updateBetDisplay();
     return;
   }
   if (val % 100 !== 0) {
     showBetError('Amount must be a multiple of $100.');
+    updateBetDisplay();
     return;
   }
-
   clearBetError();
-  state.bets[state.selectedHand] += val;
-  input.value = '';
+  state.bets[state.selectedHand] = val;
   refreshHandSelBet(state.selectedHand);
   updateBetDisplay();
+  renderBettingBalance();
 }
 
 function showBetError(msg) {
@@ -211,46 +216,82 @@ async function deal() {
   const data = await api('POST', '/round/start', { bets: state.bets });
   if (data.error) { showBetError(data.error); return; }
 
-  updateUI(data);
+  await updateUI(data);
 }
 
 // ── Early pay ──────────────────────────────────────────────────────────────────
 async function doEarlyPay(choice) {
-  const data = await api('POST', '/round/early_pay', { choice });
-  updateUI(data);
+  await updateUI(await api('POST', '/round/early_pay', { choice }));
 }
 
 // ── Playing moves ──────────────────────────────────────────────────────────────
-async function doHit()      { updateUI(await api('POST', '/round/hit')); }
-async function doStand()    { updateUI(await api('POST', '/round/stand')); }
-async function doDouble()   { updateUI(await api('POST', '/round/double')); }
-async function doSplit()    { updateUI(await api('POST', '/round/split')); }
-async function doSurrender(){ updateUI(await api('POST', '/round/surrender')); }
+async function doHit()      { await updateUI(await api('POST', '/round/hit')); }
+async function doStand()    { await updateUI(await api('POST', '/round/stand')); }
+async function doDouble() {
+  state.balance -= state.activeBet;
+  renderBalance(state.balance);
+  await updateUI(await api('POST', '/round/double'));
+}
+async function doSplit() {
+  state.balance -= state.activeBet;
+  renderBalance(state.balance);
+  await updateUI(await api('POST', '/round/split'));
+}
+async function doSurrender(){ await updateUI(await api('POST', '/round/surrender')); }
 
 // ── Phase transitions ──────────────────────────────────────────────────────────
 function nextRound()  { enterBettingPhase(); }
 function newSession() { showSessionOverlay(); }
 
 // ── Master UI update ───────────────────────────────────────────────────────────
-function updateUI(data) {
+async function updateUI(data) {
   if (!data || data.error) { showMsg(data?.error || 'Server error'); return; }
 
   state.balance = data.capital;
   state.phase   = data.phase;
   renderBalance(data.capital);
-  renderDealer(data.dealer);
-  renderHands(data.hands, data.phase);
 
-  if (data.phase === 'playing') {
-    showPhase('playing');
-    setPlayButtons(data.moves || []);
-  } else if (data.phase === 'early_pay') {
-    showPhase('early_pay');
-    renderEarlyPayInfo(data.early_pay_hand, data.early_pay_chips);
-  } else if (data.phase === 'settled') {
+  if (data.phase === 'settled') {
+    // Hide action zone immediately so no clicks fire during animation.
+    for (const p of ['betting', 'early-pay', 'playing', 'settled'])
+      document.getElementById(`phase-${p}`).style.display = 'none';
+    // Show only pre-decided profits (bust/surrender/early-pay/auto-BJ) while
+    // dealer is still revealing cards; dealer-dependent profits appear after.
+    renderHands(withPreDecidedProfitsOnly(data.hands), data.phase);
+    await animateDealerReveal(data.dealer);
+    renderHands(data.hands, data.phase);
     showPhase('settled');
     flashRoundResult(data.hands);
+  } else {
+    renderDealer(data.dealer);
+    renderHands(data.hands, data.phase);
+    if (data.phase === 'playing') {
+      if (data.active_hand && data.active_branch) {
+        const ah = data.hands.find(h => h.id === data.active_hand);
+        const ab = ah && ah.branches.find(b => b.id === data.active_branch);
+        if (ab) state.activeBet = ab.bet;
+      }
+      showPhase('playing');
+      setPlayButtons(data.moves || []);
+    } else if (data.phase === 'early_pay') {
+      showPhase('early-pay');
+      renderEarlyPayInfo(data.early_pay_hand, data.early_pay_chips);
+    }
   }
+}
+
+// ── Rendering helpers ─────────────────────────────────────────────────────────
+// Outcomes whose profit is decided before dealer draws (show during animation).
+const PRE_DECIDED_OUTCOMES = new Set(['bust', 'surrendered', 'early_pay', 'bj_auto']);
+
+function withPreDecidedProfitsOnly(hands) {
+  return hands.map(h => ({
+    ...h,
+    branches: h.branches.map(b => ({
+      ...b,
+      profit: PRE_DECIDED_OUTCOMES.has(b.outcome) ? b.profit : null,
+    })),
+  }));
 }
 
 // ── Rendering ──────────────────────────────────────────────────────────────────
@@ -258,19 +299,39 @@ function renderBalance(amount) {
   document.getElementById('balance').textContent = '$' + amount.toLocaleString();
 }
 
+// Show balance minus committed bets; called whenever bet amounts change during betting phase.
+function renderBettingBalance() {
+  const committed = state.bets.reduce((s, b) => s + b, 0);
+  renderBalance(state.balance - committed);
+}
+
 function renderDealer(dealer) {
   const hand = document.getElementById('dealer-hand');
   const val  = document.getElementById('dealer-val');
   hand.innerHTML = '';
-
   dealer.cards.forEach(c => hand.appendChild(makeCardEl(c.rank, c.suit)));
+  val.textContent = dealer.value_text;
+}
 
-  if (dealer.face_down) {
-    const hidden = document.createElement('div');
-    hidden.className = 'card face-down';
-    hand.appendChild(hidden);
+// Animate dealer reveal card-by-card with 1-second delays (Fix 3).
+async function animateDealerReveal(dealer) {
+  const hand = document.getElementById('dealer-hand');
+  const val  = document.getElementById('dealer-val');
+  hand.innerHTML = '';
+
+  if (!dealer.cards.length) { val.textContent = dealer.value_text; return; }
+
+  // First card was visible during play — appear immediately, badge shows rank only.
+  hand.appendChild(makeCardEl(dealer.cards[0].rank, dealer.cards[0].suit));
+  val.textContent = dealer.cards[0].rank;
+
+  // Each subsequent card drawn by the dealer appears after a 1-second pause.
+  for (let i = 1; i < dealer.cards.length; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    hand.appendChild(makeCardEl(dealer.cards[i].rank, dealer.cards[i].suit));
   }
 
+  // Final settled total, e.g. "18" or "22 — Busted" or "Blackjack".
   val.textContent = dealer.value_text;
 }
 
@@ -291,7 +352,7 @@ function renderHands(hands, phase) {
     branchesRow.className = 'branches-row';
 
     for (const branch of hand.branches) {
-      branchesRow.appendChild(makeBranchEl(branch, phase));
+      branchesRow.appendChild(makeBranchEl(branch, phase, hand.splits));
     }
 
     group.appendChild(branchesRow);
@@ -299,14 +360,14 @@ function renderHands(hands, phase) {
   }
 }
 
-function makeBranchEl(branch, phase) {
+function makeBranchEl(branch, phase, handSplits = 0) {
   const el = document.createElement('div');
   const oc = branch.outcome;
   let stateClass = '';
 
   if (branch.active) {
     stateClass = 'active';
-  } else if (oc === 'won' || oc === 'bj' || oc === 'early_pay') {
+  } else if (oc === 'won' || oc === 'bj' || oc === 'bj_auto' || oc === 'early_pay') {
     stateClass = 'won';
   } else if (oc === 'bust' || oc === 'lost') {
     stateClass = 'bust';
@@ -348,9 +409,11 @@ function makeBranchEl(branch, phase) {
 
   const valEl = document.createElement('div');
   valEl.className = 'hand-value';
-  const vt = branch.value_text;
+  // Post-split A+10 is never Blackjack — clamp to numeric value as a hard frontend guard.
+  const vt = (handSplits > 0 && branch.value_text === 'Blackjack') ? '21' : branch.value_text;
   if (vt === 'Busted' || branch.bust)  valEl.classList.add('bust-val');
-  if (vt === 'Blackjack')              valEl.classList.add('bj-val');
+  else if (vt === 'Blackjack')         valEl.classList.add('bj-val');
+  else if (branch.danger)              valEl.classList.add('danger-val');
   valEl.textContent = vt;
   info.appendChild(valEl);
 
@@ -388,9 +451,9 @@ function renderEarlyPayInfo(handId, chips) {
 
   document.getElementById('early-pay-info').innerHTML =
     `Hand ${handId} has <strong>Blackjack!</strong> ` +
-    `Dealer may also have Blackjack.<br>` +
+    `Dealer may draw Blackjack — no hole card dealt yet.<br>` +
     `Take <strong>+$${earlyPay.toLocaleString()}</strong> now, ` +
-    `or wait for <strong>+$${waitPay.toLocaleString()}</strong> (or push)?`;
+    `or wait for <strong>+$${waitPay.toLocaleString()}</strong> (risk push)?`;
 
   document.getElementById('btn-early-take').textContent =
     `Take Early Pay (+$${earlyPay.toLocaleString()})`;
@@ -467,28 +530,87 @@ function hideIncome() {
   document.getElementById('income-modal').classList.add('hidden');
 }
 
+// ── Rules modal ────────────────────────────────────────────────────────────────
+let _rulesLang  = 'english';
+const _rulesCache = {};
+
+function showRules() {
+  // Force display via inline style — bypasses any CSS cascade issues.
+  document.getElementById('rules-modal').style.display = 'flex';
+  _loadRules(_rulesLang);
+}
+
+function hideRules() {
+  document.getElementById('rules-modal').style.display = 'none';
+}
+
+function switchRulesLang(lang) {
+  _rulesLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${lang}`).classList.add('active');
+  _loadRules(lang);
+}
+
+async function _loadRules(lang) {
+  const contentEl = document.getElementById('rules-content');
+  if (_rulesCache[lang]) { contentEl.innerHTML = _rulesCache[lang]; return; }
+
+  contentEl.innerHTML = '<p style="color:var(--ivory-dim)">Loading…</p>';
+  const data = await api('GET', `/rules/${lang}`);
+  if (!data.content) return;
+
+  // Convert rule blocks (separated by blank lines) into <p> elements.
+  const html = data.content
+    .trim()
+    .split(/\n\n+/)
+    .filter(Boolean)
+    .map(block => {
+      const safe = block
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+      return `<p>${safe}</p>`;
+    })
+    .join('');
+
+  _rulesCache[lang] = html;
+  contentEl.innerHTML = html;
+}
+
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  // Enter on manual-bet input
-  if (e.key === 'Enter' && document.activeElement.id === 'manual-bet') {
-    confirmManualBet();
-    return;
-  }
-  // Allow only digit / backspace / arrow on manual-bet input to prevent decimals
-  if (document.activeElement.id === 'manual-bet') {
-    if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
-  }
+  // bet-display handled via its own listeners in DOMContentLoaded
 });
 
-// Strip non-integer chars on input event
+// Wire up inline bet display + rules modal close handlers
 document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('manual-bet');
-  if (inp) {
-    inp.addEventListener('input', function () {
-      const cleaned = this.value.replace(/[^0-9]/g, '');
-      if (this.value !== cleaned) this.value = cleaned;
-    });
-  }
+  const betEl = document.getElementById('bet-display');
+
+  betEl.addEventListener('focus', function() {
+    const val = state.bets[state.selectedHand];
+    this.value = val > 0 ? String(val) : '';
+    this.select();
+  });
+
+  betEl.addEventListener('blur', commitBetInput);
+
+  betEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { this.blur(); return; }
+    if (e.key === 'Escape') { updateBetDisplay(); this.blur(); return; }
+    // Allow: digits, backspace, delete, arrows, tab, ctrl/meta combos
+    if (!e.ctrlKey && !e.metaKey && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  // Close rules modal when clicking the backdrop (but NOT when clicking inside the card).
+  document.getElementById('rules-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) hideRules();
+  });
+
+  // Close rules modal via the X button.
+  document.getElementById('rules-close-btn').addEventListener('click', hideRules);
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────────

@@ -10,8 +10,6 @@ class Player:
 
     Methods:
         prepare(chips_list: list[int], cards_and_suits_list: list[list[str]]): load cards for new round.
-
-        update_insurance(insurance_hands_list: list[str]): update insurance marks of hands having insurance.
     """
 
     def __init__(self):
@@ -40,14 +38,3 @@ class Player:
                 }
             )
             self.hands_dict[str(i + 1)].display_properties()
-
-    def update_insurance(self, insurance_hands_list: list[str]):
-        """
-        Update insurance marks of hands with insurance.
-
-        Args:
-            insurance_hands_list (list[str]): list of hands that have insurance.
-        """
-        if len(insurance_hands_list) > 0:
-            for insurance_head_ordinal in insurance_hands_list:
-                self.hands_dict[insurance_head_ordinal].set_insurance_value()
