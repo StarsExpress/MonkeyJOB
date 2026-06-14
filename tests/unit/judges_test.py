@@ -1,6 +1,6 @@
 import unittest
 from parameterized import parameterized
-from configs.rules_config import MAX_SPLITS
+from configs.hands_config import MAX_SPLITS
 from utils.judges import judge_blackjack, judge_surrender, judge_split
 
 

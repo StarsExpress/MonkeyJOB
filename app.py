@@ -2,11 +2,9 @@ from machines.shuffle_machine import ShuffleMachine
 from roles.player import Player
 from utils.judges import judge_blackjack, judge_surrender, judge_split
 from utils.trackers import update_properties, track_display_value
-from configs.rules_config import (
-    MIN_BET, MAX_BET, BLACKJACK_PAY, MIN_DEALER_VALUE, MAX_TOTAL_VALUE,
-)
-from configs.input_config import DEFAULT_PLAYER_NAME, HANDS_DICT
-from configs.output_config import DANGER_ZONE
+from configs.hands_config import MIN_DEALER_VALUE, MAX_TOTAL_VALUE, HANDS_RANGE
+from configs.bets_config import MAX_CAPITAL, MIN_BET, MAX_BET, BLACKJACK_PAY
+from configs.display_config import DEFAULT_PLAYER_NAME, DANGER_ZONE
 
 
 class Application:
@@ -66,8 +64,8 @@ class Application:
                 return {"error": "Insufficient capital for that bet."}
             temp -= bet
 
-        if len(bets) > HANDS_DICT["max"]:
-            return {"error": f"Maximum {HANDS_DICT['max']} hands allowed."}
+        if len(bets) > HANDS_RANGE["max"]:
+            return {"error": f"Maximum {HANDS_RANGE['max']} hands allowed."}
 
         self._initial_capital = self.capital
         self._profits = {}

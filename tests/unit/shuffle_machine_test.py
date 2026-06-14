@@ -1,6 +1,6 @@
 import unittest
 from collections import Counter
-from configs.rules_config import CARDS_LIST, NUMBER_OF_DECKS, SUITS
+from configs.cards_config import CARDS_LIST, NUMBER_OF_DECKS, SUITS
 from machines.shuffle_machine import ShuffleMachine
 
 
@@ -14,6 +14,7 @@ class TestShuffleMachine(unittest.TestCase):
         """Test functionality of load_and_shuffle."""
         self.machine.load_and_shuffle()
         cards_dict = dict(Counter(self.machine.cards_list))
+
         self.assertEqual(cards_dict.keys(), set(CARDS_LIST))
         self.assertEqual(set(cards_dict.values()), {4 * NUMBER_OF_DECKS})
 
@@ -32,8 +33,10 @@ class TestShuffleMachine(unittest.TestCase):
             self.machine.suits_dict[drawn_card].append(drawn_suit)
 
         cards_dict = dict(Counter(self.machine.cards_list))
+
         self.assertEqual(cards_dict.keys(), set(CARDS_LIST))
         self.assertEqual(set(cards_dict.values()), {4 * NUMBER_OF_DECKS})
+
         for card in cards_dict.keys():
             suits_dict = dict(Counter(self.machine.suits_dict[card]))
             self.assertEqual(suits_dict.keys(), set(SUITS))

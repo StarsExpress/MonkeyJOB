@@ -1,8 +1,8 @@
-from configs.rules_config import MAX_SPLITS
+from configs.hands_config import MAX_SPLITS
 from utils.judges import judge_blackjack
 from utils.trackers import update_properties
-from widgets.cards import show_player_value
-from widgets.notifications import remind_splits_rules
+from utils.cards import show_player_value
+from utils.notifications import remind_splits_rules
 
 
 class HandProcessor:

@@ -1,4 +1,5 @@
-from configs.rules_config import CARD_TO_VALUE_DICT, MAX_TOTAL_VALUE, MIN_DEALER_VALUE
+from configs.cards_config import CARD_TO_VALUE_DICT
+from configs.hands_config import MAX_TOTAL_VALUE, MIN_DEALER_VALUE
 
 
 def update_properties(cards_list: list[str]):

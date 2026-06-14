@@ -1,7 +1,7 @@
 from copy import deepcopy
 import random
 from random import shuffle
-from configs.rules_config import NUMBER_OF_DECKS, CARDS_LIST, SUITS_DICT
+from configs.cards_config import NUMBER_OF_DECKS, CARDS_LIST, SUITS_DICT
 
 
 class ShuffleMachine:

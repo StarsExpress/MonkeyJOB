@@ -1,4 +1,5 @@
-from configs.rules_config import CARD_TO_VALUE_DICT, SURRENDER_TO_ACE, MAX_SPLITS
+from configs.cards_config import CARD_TO_VALUE_DICT
+from configs.hands_config import SURRENDER_TO_ACE, MAX_SPLITS
 
 
 def judge_blackjack(cards_list: list[str], split: bool = False) -> bool:
