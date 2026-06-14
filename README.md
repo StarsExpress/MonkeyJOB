@@ -1,10 +1,7 @@
-# 🐒 Monkey Code
-Here, we've only got one mode:
+# Archived Version 1️⃣
 
-Commit & track monkey code!
+Just a record of how this Blackjack game has evolved.
 
-Keep it safe in this repo 🗃
+Still can't believe that in 2024, I really used PyWebIO as frontend 🤣
 
-Job's got-
-
-Monkey code 💽
+Fortunately later I realized how to do frontend in a more proper manner 😆
