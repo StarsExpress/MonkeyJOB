@@ -1,7 +1,6 @@
 from copy import deepcopy
-import random
-from random import shuffle
-from configs.rules_config import NUMBER_OF_DECKS, CARDS_LIST, SUITS_DICT
+from random import shuffle, randrange
+from configs.cards_config import NUMBER_OF_DECKS, CARDS_LIST, SUITS_DICT
 
 
 class ShuffleMachine:
@@ -20,13 +19,14 @@ class ShuffleMachine:
 
     def __init__(self) -> None:
         """Initialize ShuffleMachine with empty list of cards and empty dictionary of suits."""
-        self.cards_list = []
-        self.suits_dict = {}
+        self.cards_list: list[str] = []
+        self.suits_dict: dict[str, list[str]] = dict()
 
     def load_and_shuffle(self) -> None:
         """Refill cards list and shuffle them. Refill suits dictionary."""
         self.cards_list.clear()
         self.cards_list.extend(CARDS_LIST * NUMBER_OF_DECKS)
+
         shuffle(self.cards_list)
         self.suits_dict = deepcopy(SUITS_DICT)
 
@@ -41,12 +41,12 @@ class ShuffleMachine:
             tuple: tuple of drawn card(s) and suit(s).
         """
         if two_cards:
-            card_1 = self.cards_list.pop(0)
-            card_2 = self.cards_list.pop(0)
-            suit_1 = self.suits_dict[card_1].pop(random.randrange(len(self.suits_dict[card_1])))
-            suit_2 = self.suits_dict[card_2].pop(random.randrange(len(self.suits_dict[card_2])))
+            card_1 = self.cards_list.pop()
+            card_2 = self.cards_list.pop()
+            suit_1 = self.suits_dict[card_1].pop(randrange(len(self.suits_dict[card_1])))
+            suit_2 = self.suits_dict[card_2].pop(randrange(len(self.suits_dict[card_2])))
             return card_1, card_2, suit_1, suit_2
 
-        card = self.cards_list.pop(0)
-        suit = self.suits_dict[card].pop(random.randrange(len(self.suits_dict[card])))
+        card = self.cards_list.pop()
+        suit = self.suits_dict[card].pop(randrange(len(self.suits_dict[card])))
         return card, suit

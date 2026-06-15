@@ -1,0 +1,7 @@
+.claude/
+*.pyc
+__pychache__/
+.pytest_cache/
+.idea/
+.vscode/
+.DS_Store

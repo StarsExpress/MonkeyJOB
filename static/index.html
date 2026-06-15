@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎰JOB's Here</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+
+<!-- SESSION SETUP OVERLAY -->
+<div class="session-overlay" id="session-overlay">
+  <div class="session-card">
+    <h2>♠️♥️JOB♦️♣️<br>Jack's Online Blackjack</h2>
+    <div class="session-field">
+      <label>Your Name (optional)</label>
+      <input type="text" id="player-name" placeholder="What shall we call you?" maxlength="50">
+    </div>
+    <div class="session-field">
+      <label>Cash-In Capital ($)</label>
+      <input type="number" id="player-capital" placeholder="e.g. 10000" min="300" step="100">
+    </div>
+    <div class="session-error" id="session-error"></div>
+    <button class="session-submit" onclick="submitSession()">Enter Table</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-title">♠️♥️JOB: Jack's Online Blackjack♦️♣️</div>
+  <div class="topbar-balance">Balance &nbsp;<span id="balance">$0</span></div>
+  <nav class="topbar-nav">
+    <button class="nav-btn" onclick="showRules()">👀Read Rules📖</button>
+    <button class="nav-btn" onclick="showGitHub()">🐒 My GitHub <svg height="14" viewBox="0 0 16 16" width="14" style="fill:currentColor;vertical-align:middle;" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></button>
+    <button class="nav-btn" onclick="showIncome()">💰Income Statement📃</button>
+    <button class="nav-btn" onclick="newSession()">🔄Restart⓪</button>
+  </nav>
+</header>
+
+<!-- TABLE -->
+<main class="table" id="table">
+
+  <!-- DEALER -->
+  <section class="dealer-zone">
+    <div class="zone-label">Dealer</div>
+    <div class="dealer-hand" id="dealer-hand"></div>
+    <div class="dealer-value-badge" id="dealer-val">—</div>
+  </section>
+
+  <!-- PLAYER -->
+  <section class="player-zone">
+    <div class="zone-label" style="margin-bottom:10px;">Your Hands</div>
+    <div class="hands-row" id="hands-row"></div>
+  </section>
+
+  <!-- MSG OVERLAY -->
+  <div class="msg-overlay" id="msg-overlay"></div>
+
+  <!-- INSURANCE BANNER (auto-declined server-side, reserved) -->
+  <div class="insurance-banner" id="ins-banner" style="display:none;">
+    <span>Dealer shows Ace — take insurance?</span>
+    <button class="ins-btn ins-yes">Yes</button>
+    <button class="ins-btn ins-no">No thanks</button>
+  </div>
+
+</main>
+
+<!-- ACTION ZONE -->
+<footer class="action-zone">
+
+  <!-- Phase: Betting -->
+  <div id="phase-betting" style="display:none; flex-direction:column; gap:8px;">
+
+    <!-- Row 1: hand count selector -->
+    <div class="hands-selector-row">
+      <span class="chips-label">Hands</span>
+      <div class="hands-btns" id="hands-count-btns"></div>
+    </div>
+
+    <!-- Row 2: per-hand selector (hidden when numHands == 1) -->
+    <div class="hand-sel-row" id="hand-sel-row" style="display:none;">
+      <div id="hand-sel-btns"></div>
+    </div>
+
+    <!-- Row 3: bet error -->
+    <div class="bet-error" id="bet-error"></div>
+
+    <!-- Row 4: chips + editable bet display + controls -->
+    <div class="chips-row">
+      <span class="chips-label">Bet</span>
+      <div class="chip c100"   onclick="addBet(100)">100</div>
+      <div class="chip c500"   onclick="addBet(500)">500</div>
+      <div class="chip c1000"  onclick="addBet(1000)">1K</div>
+      <div class="chip c10000" onclick="addBet(10000)">10K</div>
+      <input type="text" id="bet-display" class="bet-display" inputmode="numeric" autocomplete="off" value="$0">
+      <button class="bet-clear" onclick="clearBet()">Clear</button>
+      <button class="action-btn btn-deal" onclick="deal()" style="margin-left:12px;">Deal</button>
+    </div>
+  </div>
+
+  <!-- Phase: Early Pay -->
+  <div id="phase-early-pay" style="display:none;">
+    <div class="early-pay-panel">
+      <div class="early-pay-info" id="early-pay-info">
+        <strong>Blackjack!</strong> Dealer shows a face card.
+      </div>
+      <div class="actions-row">
+        <button class="action-btn btn-stand"  onclick="doEarlyPay('take')" id="btn-early-take">Take Early Pay (+$—)</button>
+        <button class="action-btn btn-double" onclick="doEarlyPay('wait')" id="btn-early-wait">Wait for ×1.5</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase: Insurance -->
+  <div id="phase-insurance" style="display:none; flex-direction:column; gap:10px;">
+    <div class="insurance-phase-panel">
+      <div class="insurance-phase-info">
+        Dealer shows <strong>Ace</strong> — buy insurance on your hand(s)?
+      </div>
+      <div class="insurance-toggles" id="insurance-toggles"></div>
+      <div class="actions-row">
+        <button class="action-btn btn-deal" onclick="doInsurance()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase: Playing -->
+  <div id="phase-playing" style="display:none;">
+    <div class="actions-row">
+      <button class="action-btn btn-hit"    id="btn-hit"    onclick="doHit()">Hit</button>
+      <button class="action-btn btn-stand"  id="btn-stand"  onclick="doStand()">Stand</button>
+      <button class="action-btn btn-double" id="btn-double" onclick="doDouble()">Double</button>
+      <button class="action-btn btn-split"  id="btn-split"  onclick="doSplit()">Split</button>
+      <button class="action-btn btn-sur"    id="btn-sur"    onclick="doSurrender()">Surrender</button>
+    </div>
+  </div>
+
+  <!-- Phase: Settled -->
+  <div id="phase-settled" style="display:none;">
+    <div class="actions-row">
+      <button class="action-btn btn-next"    onclick="nextRound()">➡️Next Round🆕</button>
+      <button class="action-btn btn-new-ses" onclick="newSession()">🔄Restart⓪</button>
+    </div>
+  </div>
+
+</footer>
+
+<!-- INCOME MODAL -->
+<div class="income-modal hidden" id="income-modal" onclick="hideIncome()">
+  <div class="income-card" onclick="event.stopPropagation()">
+    <h3>Income Statement</h3>
+    <table class="income-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Round</th>
+          <th>Profit</th>
+          <th>Capital</th>
+        </tr>
+      </thead>
+      <tbody id="income-table-body"></tbody>
+    </table>
+    <button class="income-close" onclick="hideIncome()">Close</button>
+  </div>
+</div>
+
+<!-- RULES MODAL — display toggled via JS style.display, not CSS class -->
+<div class="rules-modal" id="rules-modal" style="display:none;">
+  <div class="rules-card" id="rules-card">
+    <div class="rules-header">
+      <h3>Game Rules</h3>
+      <button class="rules-close" id="rules-close-btn">✕</button>
+    </div>
+    <div class="rules-lang-tabs">
+      <button class="lang-tab active" id="tab-english"     onclick="switchRulesLang('english')">🇺🇸 English</button>
+      <button class="lang-tab"        id="tab-traditional" onclick="switchRulesLang('traditional')">🇹🇼 繁體中文</button>
+      <button class="lang-tab"        id="tab-simplified"  onclick="switchRulesLang('simplified')">🇨🇳 简体中文</button>
+    </div>
+    <div class="rules-content" id="rules-content"></div>
+  </div>
+</div>
+
+<!-- GITHUB MODAL -->
+<div class="github-modal" id="github-modal" style="display:none;">
+  <div class="github-card">
+    <div class="github-header">
+      <button class="rules-close" id="github-close-btn">✕</button>
+    </div>
+    <div class="github-content">
+      <p>Welcome to JOB: Jack's Online Blackjack.<br>
+         Thank you for playing this game.<br>
+         Feel free to visit my GitHub repo for JOB.</p>
+      <p>Should you have any questions or find any bugs,<br>
+         please feel free to let me know inside the Issues area.</p>
+    </div>
+    <button class="action-btn btn-deal github-go-btn"
+            onclick="window.open('https://github.com/StarsExpress/Blackjack-Monkey/tree/main', '_blank')">
+      ✈️ Let's Go 🏎️
+    </button>
+  </div>
+</div>
+
+<script src="/static/app.js?v=4"></script>
+</body>
+</html>

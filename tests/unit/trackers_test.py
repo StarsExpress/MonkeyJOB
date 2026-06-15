@@ -4,6 +4,7 @@ from utils.trackers import update_properties, track_display_value
 
 class TestShuffleMachine(unittest.TestCase):
     """Test functionality of functions in trackers.py."""
+
     def test_update_properties(self):
         """Test functionality of update_properties."""
         self.assertEqual(update_properties(['A'] * 11), (21, True, False))
