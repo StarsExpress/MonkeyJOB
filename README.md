@@ -1,11 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="500" height="50">
-  <text y="35" font-size="28" font-family="serif">
-    <tspan fill="white">🐒Monkey JOB: </tspan>
-    <tspan fill="#c9a84c" font-weight="bold">J</tspan><tspan fill="white">ack's </tspan>
-    <tspan fill="#c9a84c" font-weight="bold">O</tspan><tspan fill="white">nline </tspan>
-    <tspan fill="#c9a84c" font-weight="bold">B</tspan><tspan fill="white">lackjack</tspan>
-  </text>
-</svg>
+# 🐒Monkey JOB: Jack's Online Blackjack
 
 ### 🛠 Tech Ingredients
 - **Backend**: Python, FastAPI
