@@ -35,7 +35,13 @@ class HandProcessor:
         reload(card: str, suit: str, branch_ordinal: str = '1'): reload a branch.
     """
 
-    def __init__(self, head_ordinal: str, chips: int, cards_list: list[str], suits_list: list[str]):
+    def __init__(
+        self,
+        head_ordinal: str,
+        chips: int,
+        cards_list: list[str],
+        suits_list: list[str],
+    ):
         """
         Initialize HandProcessor with given parameters.
 
@@ -45,18 +51,20 @@ class HandProcessor:
             cards_list (list[str]): list of cards of hand.
             suits_list (list[str]): list of suits corresponding to cards.
         """
-        self.head_ordinal, self.initial_chips, self.insurance, self.splits = head_ordinal, chips, 0, 0
+        self.head_ordinal, self.initial_chips = head_ordinal, chips
+        self.insurance, self.splits = 0, 0
 
         self.blackjack, self.surrendered = judge_blackjack(cards_list), False
-        self.aces_pair = True if cards_list == ['A', 'A'] else False  # Aces pair mark.
+        self.aces_pair = True if cards_list == ["A", "A"] else False  # Aces pair mark.
 
-        self.chips_dict, self.double_down_dict = {'1': chips}, {'1': False}
-        self.cards_dict, self.suits_dict = {'1': cards_list}, {'1': suits_list}
+        self.chips_dict, self.double_down_dict = {"1": chips}, {"1": False}
+        self.cards_dict, self.suits_dict = {"1": cards_list}, {"1": suits_list}
 
         value, soft, bust = update_properties(cards_list)
-        self.value_dict, self.soft_dict, self.bust_dict = {'1': value}, {'1': soft}, {'1': bust}
+        self.value_dict, self.soft_dict = {"1": value}, {"1": soft}
+        self.bust_dict = {"1": bust}
 
-    def display_properties(self, branch_ordinal: str = '1'):
+    def display_properties(self, branch_ordinal: str = "1"):
         """
         Display properties of a branch.
 
@@ -80,7 +88,7 @@ class HandProcessor:
         """Mark the hand as surrendered."""
         self.surrendered = True
 
-    def stand(self, branch_ordinal: str = '1'):
+    def stand(self, branch_ordinal: str = "1"):
         """
         Mark a branch as committed stand. If the stood hand is soft, finalize its display value.
 
@@ -98,7 +106,9 @@ class HandProcessor:
                 soft=self.soft_dict[branch_ordinal],
             )
 
-    def hit_or_double_down(self, card: str, suit: str, branch_ordinal: str = '1', double_down: bool = False):
+    def hit_or_double_down(
+        self, card: str, suit: str, branch_ordinal: str = "1", double_down: bool = False
+    ):
         """
         Hit or double down a branch.
 
@@ -108,7 +118,8 @@ class HandProcessor:
             branch_ordinal (str, optional): ordinal of branch. Defaults to '1'.
             double_down (bool, optional): if double down is selected. Defaults to False.
         """
-        self.cards_dict[branch_ordinal].append(card)  # Append a new card into the hand's list.
+        # Append a new card into the hand's list.
+        self.cards_dict[branch_ordinal].append(card)
         self.suits_dict[branch_ordinal].append(suit)
 
         value, soft, bust = update_properties(self.cards_dict[branch_ordinal])
@@ -117,10 +128,12 @@ class HandProcessor:
 
         if double_down:
             self.chips_dict[branch_ordinal] *= 2
-            self.double_down_dict[branch_ordinal] = True  # Switch double down mark to True.
+            # Switch double down mark to True.
+            self.double_down_dict[branch_ordinal] = True
 
         show_player_value(
-            self.head_ordinal, branch_ordinal,
+            self.head_ordinal,
+            branch_ordinal,
             cards_list=self.cards_dict[branch_ordinal],
             suits_list=self.suits_dict[branch_ordinal],
             value=value,
@@ -132,7 +145,7 @@ class HandProcessor:
             update_chips=self.double_down_dict[branch_ordinal],
         )
 
-    def split(self, card: str, suit: str, branch_ordinal: str = '1'):
+    def split(self, card: str, suit: str, branch_ordinal: str = "1"):
         """
         Split a branch. If Aces pair is split, stand right after split.
 
@@ -142,7 +155,10 @@ class HandProcessor:
             branch_ordinal (str, optional): ordinal of branch. Defaults to '1'.
         """
         stand = True if self.aces_pair else False
-        self.cards_dict[str(self.splits + 2)] = [self.cards_dict[branch_ordinal][-1]]  # Move split card to new branch.
+        
+        # Move split card to new branch.
+        self.cards_dict[str(self.splits + 2)] = [self.cards_dict[branch_ordinal][-1]]
+        
         self.cards_dict[branch_ordinal] = [self.cards_dict[branch_ordinal][0], card]
 
         self.suits_dict[str(self.splits + 2)] = [self.suits_dict[branch_ordinal][-1]]
@@ -167,7 +183,7 @@ class HandProcessor:
         if self.splits == MAX_SPLITS:
             remind_splits_rules(self.head_ordinal)
 
-    def reload(self, card: str, suit: str, branch_ordinal: str = '1'):
+    def reload(self, card: str, suit: str, branch_ordinal: str = "1"):
         """
         Reload a new branch when split happens.
 
@@ -180,7 +196,9 @@ class HandProcessor:
         if branch_ordinal not in self.cards_dict.keys():
             return
 
-        self.chips_dict[branch_ordinal], self.double_down_dict[branch_ordinal] = self.initial_chips, False
+        self.chips_dict[branch_ordinal] = self.initial_chips
+        self.double_down_dict[branch_ordinal] = False
+        
         self.cards_dict[branch_ordinal].append(card)
         self.suits_dict[branch_ordinal].append(suit)
 
@@ -188,9 +206,12 @@ class HandProcessor:
         self.value_dict[branch_ordinal] = value
         self.soft_dict[branch_ordinal], self.bust_dict[branch_ordinal] = soft, bust
 
-        stand = True if self.aces_pair else False  # If the hand is Aces pair, stand right after reloading.
+        # If the hand is Aces pair, stand right after reloading.
+        stand = True if self.aces_pair else False
+
         show_player_value(
-            self.head_ordinal, branch_ordinal,
+            self.head_ordinal,
+            branch_ordinal,
             cards_list=self.cards_dict[branch_ordinal],
             suits_list=self.suits_dict[branch_ordinal],
             value=value,
