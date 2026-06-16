@@ -7,7 +7,7 @@ from configs.bets_config import MAX_CAPITAL, MIN_BET, MAX_BET, BLACKJACK_PAY
 from configs.display_config import DEFAULT_PLAYER_NAME, DANGER_ZONE
 
 
-class Application:
+class Blackjack:
     def __init__(self):
         self.machine = ShuffleMachine()
         self.player = Player()
@@ -37,6 +37,9 @@ class Application:
     # ── Session ────────────────────────────────────────────────────────────────
 
     def new_session(self, player_name: str, capital: int) -> dict:
+        if capital > MAX_CAPITAL:
+            return {"error": f"Capital can't exceed ${MAX_CAPITAL:,}."}
+
         self.player_name = player_name.strip() if player_name and player_name.strip() else DEFAULT_PLAYER_NAME
         self.capital = capital
         self.incomes = []

@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from app import Application
+from blackjack import Blackjack
 from configs.bets_config import MIN_BET, MAX_BET
 
 
@@ -8,7 +8,7 @@ class TestNewSession(unittest.TestCase):
     """Test Application.new_session initializes session state."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
 
     def test_set_capital(self):
         result = self.app.new_session("Alice", 10000)
@@ -38,7 +38,7 @@ class TestStartRoundValidation(unittest.TestCase):
     """Test Application.start_round rejects invalid bet configurations."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def test_empty_bets_error(self):
@@ -79,7 +79,7 @@ class TestPlayerBusts(unittest.TestCase):
     """Player hits into a bust — dealer skips reveal, round settles immediately."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def test_phase_is_settled(self):
@@ -141,7 +141,7 @@ class TestPlayerWinsDealerBusts(unittest.TestCase):
     """Player is not busted and dealer draws into bust: player wins."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -182,7 +182,7 @@ class TestPush(unittest.TestCase):
     """Player and dealer finish with equal values — push."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -215,7 +215,7 @@ class TestBlackjackAutoPay(unittest.TestCase):
     """Dealer 1st has no BJ chance: player's BJ is auto-paid at 1.5 rate profit immediately."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -249,7 +249,7 @@ class TestEarlyPayTake(unittest.TestCase):
     """Dealer might get BJ: player has BJ and takes early pay of 1.0 profit."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -297,7 +297,7 @@ class TestEarlyPayWaitDealerBlackjack(unittest.TestCase):
     """Player waits on early pay and dealer also has BJ: push."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -333,7 +333,7 @@ class TestSurrender(unittest.TestCase):
     """Player surrenders a two-card hand: loses 50% of the bet."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -379,7 +379,7 @@ class TestDoubleDown(unittest.TestCase):
     """Player doubles down; wins against dealer who doesn't bust."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -436,7 +436,7 @@ class TestSplit(unittest.TestCase):
     """Player splits a pair. Both branches play out against dealer."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def _run_round(self):
@@ -501,7 +501,7 @@ class TestInsurance(unittest.TestCase):
     """Insurance phase: dealer shows Ace, player may bet against dealer blackjack."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def test_insurance_phase_against_dealer_ace(self):
@@ -643,7 +643,7 @@ class TestMultipleRounds(unittest.TestCase):
     """Capital and round counter carry over across consecutive rounds."""
 
     def setUp(self):
-        self.app = Application()
+        self.app = Blackjack()
         self.app.new_session("Alice", 10000)
 
     def test_round_number_increments(self):

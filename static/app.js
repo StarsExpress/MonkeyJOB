@@ -51,6 +51,12 @@ function showSessionOverlay() {
   document.getElementById('session-overlay').classList.remove('hidden');
 }
 
+['player-name', 'player-capital'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitSession();
+  });
+});
+
 // ── Betting phase ──────────────────────────────────────────────────────────────
 function enterBettingPhase() {
   state.phase = 'betting';
@@ -455,9 +461,9 @@ function renderEarlyPayInfo(handId, chips) {
 
   document.getElementById('early-pay-info').innerHTML =
     `Hand ${handId} has <strong>Blackjack!</strong> ` +
-    `Dealer may draw Blackjack — no hole card dealt yet.<br>` +
+    `Dealer may draw Blackjack, however.<br>` +
     `Take <strong>+$${earlyPay.toLocaleString()}</strong> now, ` +
-    `or wait for <strong>+$${waitPay.toLocaleString()}</strong> (risk push)?`;
+    `or wait for potential <strong>+$${waitPay.toLocaleString()}</strong> with push risk?`;
 
   document.getElementById('btn-early-take').textContent =
     `Take Early Pay (+$${earlyPay.toLocaleString()})`;
