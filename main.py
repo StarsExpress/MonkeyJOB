@@ -3,12 +3,12 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from app import Application
+from blackjack import Blackjack
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-game = Application()
+game = Blackjack()
 
 
 @app.get("/")
