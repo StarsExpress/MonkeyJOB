@@ -45,6 +45,7 @@ async function submitSession() {
 }
 
 function showSessionOverlay() {
+  document.getElementById('gameover-modal').style.display = 'none';
   document.getElementById('player-name').value = '';
   document.getElementById('player-capital').value = '';
   document.getElementById('session-error').textContent = '';
@@ -268,6 +269,7 @@ async function updateUI(data) {
     renderHands(data.hands, data.phase);
     showPhase('settled');
     flashRoundResult(data.hands);
+    if (data.capital < MIN_BET) setTimeout(showGameOver, 2500);
   } else {
     renderDealer(data.dealer);
     renderHands(data.hands, data.phase);
@@ -617,6 +619,11 @@ function renderInsuranceToggles(insuranceHands) {
 async function doInsurance() {
   const insured_hands = Object.keys(_insuranceSelected).filter(hid => _insuranceSelected[hid]);
   await updateUI(await api('POST', '/round/insurance', { insured_hands }));
+}
+
+// ── Game over modal ────────────────────────────────────────────────────────────
+function showGameOver() {
+  document.getElementById('gameover-modal').style.display = 'flex';
 }
 
 // ── GitHub modal ───────────────────────────────────────────────────────────────
