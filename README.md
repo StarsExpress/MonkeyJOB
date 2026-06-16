@@ -1,6 +1,7 @@
-#  🎰JOB: Jack's Online Blackjack
+# 🎰JOB: Jack's Online Blackjack
 
 ### [JOB's Here🃏 Awaiting Click🫰](https://jack-s-onlineblackjack.up.railway.app)
+
 
 ### 🛠 Tech Ingredients
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -49,7 +50,7 @@ Their rules are quite interesting in some parts:
    players can **wait until when it's their turn to make moves** to decide surrender or not,
    rather than forced to do surrender before any other players hit their hands.
 
-   **Don't know if such a policy still exists 🤣**
+   Don't know if such a policy still exists 🤣
 
 **The more interesting these rules are, the harder to implement into an online game.**
 
@@ -59,11 +60,10 @@ And this actually gives me motivation and fun for designing this online game �
 ### 💽 Not Just A Repo 🗃
 Alright, the above is some fun facts about casino terminology and why I set up this game.
 
-Like I said in the popup of my online game, if you have any ideas,
-please feel free to post in this repo's **Issues**.
+Like I said, if you have any ideas, **please feel free to post in this repo's Issues**.
 
 Especially if you discover bugs, then I am very willing to know and debug for us 🙏
 
 
-### Follow-up
+### Follow-up 🫱
 Which Blackjack rule is the root cause for house edge, despite 🇲🇴 casinos giving so many friendly rules?
