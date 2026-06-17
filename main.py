@@ -45,7 +45,7 @@ def start_round(req: RoundRequest):
 
 @app.post("/round/early_pay")
 def early_pay(req: EarlyPayRequest):
-    return game.make_early_pay_decision(req.choice)
+    return game.make_early_pay(req.choice)
 
 
 @app.post("/round/insurance")
