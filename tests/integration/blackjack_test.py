@@ -5,7 +5,7 @@ from configs.bets_config import MIN_BET, MAX_BET
 
 
 class TestNewSession(unittest.TestCase):
-    """Test Application.new_session initializes session state."""
+    """Test Blackjack.new_session initializes session state."""
 
     def setUp(self):
         self.app = Blackjack()
@@ -35,7 +35,7 @@ class TestNewSession(unittest.TestCase):
 
 
 class TestStartRoundValidation(unittest.TestCase):
-    """Test Application.start_round rejects invalid bet configurations."""
+    """Test Blackjack.start_round rejects invalid bet configurations."""
 
     def setUp(self):
         self.app = Blackjack()
