@@ -147,7 +147,7 @@ class Blackjack:
 
         return self._serialize()
 
-    def make_early_pay_decision(self, choice: str) -> dict:
+    def make_early_pay(self, choice: str) -> dict:
         if self._phase != "early_pay" or not self._bj_early_pay_queue:
             return {"error": "No early pay decision pending."}
 
@@ -155,14 +155,14 @@ class Blackjack:
         hand = self.player.hands_dict[hand_id]
 
         if choice == "take":
-            # Early pay: 1× profit — player gets chips back + equal profit
-            payout = hand.initial_chips * 2
-            self.capital += payout
+            # Early pay: 1.0 rate profit. Player gets chips back + equal profit.
+            self.capital += hand.initial_chips * 2
+            
             self._profits[f"{hand_id}_1"] = hand.initial_chips
             self._outcomes[f"{hand_id}_1"] = "early_pay"
             self._early_paid_hands.add(hand_id)
 
-        # "wait" → hand remains; settled after dealer reveal at 1.5× or push
+        # Wait: hand remains. Settled after dealer reveals for 1.5 rate profit or push.
         if self._bj_early_pay_queue:
             self._phase = "early_pay"
 
@@ -207,12 +207,13 @@ class Blackjack:
         if self._phase != "insurance":
             return {"error": "Not in insurance phase."}
 
-        for hid in insured_hands:
-            if hid in self.player.hands_dict and hid in self._non_bj_hands:
-                hand = self.player.hands_dict[hid]
-                amount = hand.initial_chips // 2
-                hand.insurance = amount
-                self.capital -= amount
+        for hand_id in insured_hands:
+            if hand_id in self.player.hands_dict and hand_id in self._non_bj_hands:
+                hand = self.player.hands_dict[hand_id]
+                insurance = hand.initial_chips // 2
+
+                hand.insurance = insurance
+                self.capital -= insurance
 
         self._start_playing_or_close()
         return self._serialize()
@@ -233,8 +234,8 @@ class Blackjack:
                 self._outcomes[f"{self._active_hand}_{self._active_branch}"] = "bust"
 
             if hand.splits > 0:
-                rc, rs = self.machine.draw()
-                hand.reload(rc, rs, self._active_branch)
+                card, suit = self.machine.draw()
+                hand.reload(card, suit, self._active_branch)
 
             self._advance_branch()
             self._auto_skip_21()
@@ -249,8 +250,8 @@ class Blackjack:
         hand.stand(self._active_branch)
 
         if hand.splits > 0:
-            rc, rs = self.machine.draw()
-            hand.reload(rc, rs, self._active_branch)
+            card, suit = self.machine.draw()
+            hand.reload(card, suit, self._active_branch)
 
         self._advance_branch()
         self._auto_skip_21()
@@ -270,8 +271,8 @@ class Blackjack:
             self._outcomes[f"{self._active_hand}_{self._active_branch}"] = "bust"
 
         if hand.splits > 0:
-            rc, rs = self.machine.draw()
-            hand.reload(rc, rs, self._active_branch)
+            card, suit = self.machine.draw()
+            hand.reload(card, suit, self._active_branch)
 
         self._advance_branch()
         self._auto_skip_21()
@@ -287,11 +288,12 @@ class Blackjack:
         card, suit = self.machine.draw()
         hand.split(card, suit, self._active_branch)
 
-        if hand.aces_pair:
-            rc, rs = self.machine.draw()
-            hand.reload(rc, rs, self._active_branch)
-            self._advance_branch()  # branch 1 → branch 2
-            self._advance_branch()  # branch 2 → next hand / dealer (no player input on aces splits)
+        if hand.aces_pair:  # No hit nor double down after splitting Aces.
+            card, suit = self.machine.draw()
+            hand.reload(card, suit, self._active_branch)
+
+            self._advance_branch()  # Branch 1 → branch 2.
+            self._advance_branch()  # Branch 2 → next hand / dealer.
 
         else:
             self._auto_skip_21()
@@ -315,16 +317,16 @@ class Blackjack:
         """Auto-advance past any active branch already at 21 (e.g. post-split A+10)."""
         while self._phase == "playing" and self._active_hand and self._active_branch:
             hand = self.player.hands_dict[self._active_hand]
-            bid = self._active_branch
+            branch_id = self._active_branch
 
-            if hand.value_dict.get(bid, 0) != MAX_TOTAL_VALUE or hand.bust_dict.get(
-                bid, False
+            if hand.value_dict.get(branch_id, 0) != MAX_TOTAL_VALUE or hand.bust_dict.get(
+                branch_id, False
             ):
                 break
 
             if hand.splits > 0:
-                rc, rs = self.machine.draw()
-                hand.reload(rc, rs, bid)
+                card, suit = self.machine.draw()
+                hand.reload(card, suit, branch_id)
 
             self._advance_branch()
 
@@ -350,18 +352,18 @@ class Blackjack:
 
     def _needs_dealer_draw(self) -> bool:
         """True if at least one hand requires the dealer to draw cards."""
-        for hid, hand in self.player.hands_dict.items():
-            if hand.blackjack and hid not in self._early_paid_hands:
-                return True  # BJ hand that chose to wait needs dealer reveal
+        for hand_id, hand in self.player.hands_dict.items():
+            if hand.blackjack and hand_id not in self._early_paid_hands:
+                return True  # BJ hand that chose to wait needs dealer reveal.
 
-        for hid in self._non_bj_hands:
-            hand = self.player.hands_dict[hid]
+        for hand_id in self._non_bj_hands:
+            hand = self.player.hands_dict[hand_id]
             if hand.surrendered:
                 continue
 
-            for bid in hand.cards_dict:
-                if not hand.bust_dict.get(bid, False):
-                    return True  # Stood (non-bust) branch needs dealer reveal
+            for branch_id in hand.cards_dict:
+                if not hand.bust_dict.get(branch_id, False):
+                    return True  # Non-busted branch needs dealer reveal.
 
         return False
 
@@ -389,7 +391,7 @@ class Blackjack:
             self._dealer_soft = soft
 
             if bust:
-                self._dealer_value = 0  # 0 = busted convention
+                self._dealer_value = 0  # 0 means dealer is busted.
                 self._dealer_bust = True
                 break
 
@@ -400,8 +402,8 @@ class Blackjack:
         if not self._non_bj_hands:
             return True
 
-        for hid in self._non_bj_hands:
-            hand = self.player.hands_dict[hid]
+        for hand_id in self._non_bj_hands:
+            hand = self.player.hands_dict[hand_id]
             if hand.surrendered:
                 continue
 
@@ -435,11 +437,11 @@ class Blackjack:
                 self._profits[key] = profit
                 continue
 
-            for bid in hand.cards_dict:
-                key = f"{hid}_{bid}"
-                chips = hand.chips_dict.get(bid, hand.initial_chips)
-                bust = hand.bust_dict.get(bid, False)
-                value = hand.value_dict.get(bid, 0)
+            for branch_id in hand.cards_dict:
+                key = f"{hid}_{branch_id}"
+                chips = hand.chips_dict.get(branch_id, hand.initial_chips)
+                bust = hand.bust_dict.get(branch_id, False)
+                value = hand.value_dict.get(branch_id, 0)
 
                 if bust:
                     payout, profit = 0, -chips
