@@ -1,7 +1,8 @@
-# 🎰JOB: <u>J</u>ack's <u>O</u>nline <u>B</u>lackjack
+# 🎰JOB: Jack's Online Blackjack
 
 ### [🃏 A Fun Off Work JOB's Here Awaiting Click🫰](https://jack-s-onlineblackjack.up.railway.app)
 
+---
 
 ### 🛠 Tech Ingredients
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -13,6 +14,7 @@
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Railway](https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
 
+---
 
 ### 🐵 Monkey's Casino Code
 My repo's name has 🐒monkey because:
@@ -28,6 +30,7 @@ The more monkeys we have, which side gets more favored? Dealers or players?
 
 Combine Blackjack rules with **Bayesian statistics**, and you can get it 😃
 
+---
 
 ### Why I Do 🇲🇴 Style Blackjack
 I've been to Macau casinos several years ago.
@@ -56,6 +59,7 @@ Their rules are quite interesting in some parts:
 
 And this actually gives me motivation and fun for designing this online game 😃
 
+---
 
 ### 💽 Not Just A Repo 🗃
 Alright, the above is some fun facts about casino terminology and why I set up this game.
@@ -64,6 +68,7 @@ Like I said, if you have any ideas, **please feel free to post in this repo's Is
 
 Especially if you discover bugs, then I am very willing to know and debug for us 🙏
 
+---
 
 ### Follow-up 🫱
 Which Blackjack rule is the root cause for house edge, despite 🇲🇴 casinos giving so many friendly rules?
