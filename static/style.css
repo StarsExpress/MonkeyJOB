@@ -44,7 +44,19 @@ body {
 }
 .session-overlay.hidden { display: none; }
 
-.session-card {
+.session-page-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+.session-logo {
+  width: 360px;
+  align-self: stretch;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.session-modal {
   background: linear-gradient(160deg, #1a3a24, #0d1f14);
   border: 1px solid var(--gold-dim);
   border-radius: 16px;
@@ -55,7 +67,7 @@ body {
   gap: 20px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.7);
 }
-.session-card h2 {
+.session-modal h2 {
   font-family: 'Playfair Display', serif;
   font-size: 1.5rem;
   color: var(--gold);
