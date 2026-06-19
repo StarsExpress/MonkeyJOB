@@ -6,24 +6,27 @@
 <title>🎰JOB's Here</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
-<link rel="stylesheet" href="/static/style.css?v=3">
+<link rel="stylesheet" href="/static/style.css?v=8">
 </head>
 <body>
 
 <!-- SESSION SETUP OVERLAY -->
 <div class="session-overlay" id="session-overlay">
-  <div class="session-card">
-    <h2>♠️♥️JOB♦️♣️<br>Jack's Online Blackjack</h2>
-    <div class="session-field">
-      <label>Your Name (optional)</label>
-      <input type="text" id="player-name" placeholder="What shall we call you?" maxlength="50">
+  <div class="session-page-row">
+    <img src="/static/images/logo.png" alt="JOB logo" class="session-logo">
+    <div class="session-modal">
+      <h2>♠️♥️JOB♦️♣️<br>Jack's Online Blackjack</h2>
+      <div class="session-field">
+        <label>Your Name (optional)</label>
+        <input type="text" id="player-name" placeholder="What shall we call you?" maxlength="50">
+      </div>
+      <div class="session-field">
+        <label>Cash-In Capital ($)</label>
+        <input type="number" id="player-capital" placeholder="e.g. 10000" min="300" step="100">
+      </div>
+      <div class="session-error" id="session-error"></div>
+      <button class="session-submit" onclick="submitSession()">Enter Table</button>
     </div>
-    <div class="session-field">
-      <label>Cash-In Capital ($)</label>
-      <input type="number" id="player-capital" placeholder="e.g. 10000" min="300" step="100">
-    </div>
-    <div class="session-error" id="session-error"></div>
-    <button class="session-submit" onclick="submitSession()">Enter Table</button>
   </div>
 </div>
 

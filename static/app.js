@@ -1,6 +1,7 @@
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MIN_BET = 300;
 const MAX_BET = 10000;
+const MAX_NAME_LEN = 50;
 
 const SUIT_SYMBOL = { S: '♠', H: '♥', D: '♦', C: '♣' };
 const SUIT_COLOR  = { S: 'black', H: 'red', D: 'red', C: 'black' };
@@ -29,6 +30,10 @@ async function submitSession() {
   const capital = parseInt(document.getElementById('player-capital').value, 10);
   const errEl   = document.getElementById('session-error');
 
+  if (name.length > MAX_NAME_LEN) {
+    errEl.textContent = `Name must be ${MAX_NAME_LEN} characters or fewer.`;
+    return;
+  }
   if (!capital || capital < MIN_BET) {
     errEl.textContent = `Capital must be at least ${MIN_BET}.`;
     return;

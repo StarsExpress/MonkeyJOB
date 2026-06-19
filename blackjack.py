@@ -4,7 +4,7 @@ from utils.judges import judge_blackjack, judge_surrender, judge_split
 from utils.trackers import update_properties, track_display_value
 from configs.hands_config import MIN_DEALER_VALUE, MAX_TOTAL_VALUE, HANDS_RANGE
 from configs.bets_config import MAX_CAPITAL, MIN_BET, MAX_BET, BLACKJACK_PAY
-from configs.display_config import DEFAULT_PLAYER_NAME, DANGER_ZONE
+from configs.display_config import DEFAULT_PLAYER_NAME, DANGER_ZONE, MAX_NAME_LEN
 
 
 class Blackjack:
@@ -46,6 +46,9 @@ class Blackjack:
         self._outcomes: dict = dict()
 
     def new_session(self, player_name: str, capital: int) -> dict:
+        if player_name and len(player_name.strip()) > MAX_NAME_LEN:
+            return {"error": f"Name length after stripping left & right spaces must <= {MAX_NAME_LEN}."}
+
         if capital > MAX_CAPITAL:
             return {"error": f"Capital can't exceed ${MAX_CAPITAL:,}."}
 
