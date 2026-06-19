@@ -20,8 +20,8 @@ class TestNewSession(unittest.TestCase):
         self.assertEqual(result["player_name"], "Alice")
 
     def test_strip_boundary_whitespace(self):
-        result = self.game.new_session("  Bob  ", 5000)
-        self.assertEqual(result["player_name"], "Bob")
+        result = self.game.new_session("  Jack  ", 5000)
+        self.assertEqual(result["player_name"], "Jack")
 
     def test_blank_name_processing(self):
         result = self.game.new_session("   ", 5000)

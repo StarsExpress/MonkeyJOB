@@ -316,7 +316,7 @@ class Blackjack:
         return self._serialize()
 
     def _auto_skip_21(self):
-        """Auto-advance past any active branch already at 21 (e.g. post-split A+10)."""
+        """Auto-advance past any active branch already at value of 21."""
         while self._phase == "playing" and self._active_hand and self._active_branch:
             hand = self.player.hands_dict[self._active_hand]
             branch_id = self._active_branch
@@ -419,10 +419,10 @@ class Blackjack:
     def _settle(self):
         for hand_id, hand in self.player.hands_dict.items():
             if hand_id in self._early_paid_hands:
-                continue  # Already paid out
+                continue  # Already paid profits.
 
             if hand.surrendered:
-                continue  # Capital already updated in surrender()
+                continue  # Already took away 50% of bets.
 
             if hand.blackjack:
                 key = f"{hand_id}_1"
@@ -431,8 +431,8 @@ class Blackjack:
                     self._outcomes[key] = "push"
 
                 else:
-                    payout = int(hand.initial_chips * (1 + BLACKJACK_PAY))
                     profit = int(hand.initial_chips * BLACKJACK_PAY)
+                    payout = hand.initial_chips + profit
                     self._outcomes[key] = "bj"
 
                 self.capital += payout
@@ -442,6 +442,7 @@ class Blackjack:
             for branch_id in hand.cards_dict:
                 key = f"{hand_id}_{branch_id}"
                 chips = hand.chips_dict.get(branch_id, hand.initial_chips)
+
                 bust = hand.bust_dict.get(branch_id, False)
                 value = hand.value_dict.get(branch_id, 0)
 
@@ -494,10 +495,10 @@ class Blackjack:
     def _serialize(self) -> dict:
         dealer_data = {
             "cards": [
-                {"rank": c, "suit": s}
-                for c, s in zip(self._dealer_cards, self._dealer_suits)
+                {"rank": card, "suit": suit}
+                for card, suit in zip(self._dealer_cards, self._dealer_suits)
             ],
-            "face_down": False,  # Macau: dealer never deals a hole card
+            "face_down": False,  # Macau: dealer never deals a hole card.
             "value_text": self._dealer_value_text(),
             "blackjack": self._dealer_blackjack,
             "bust": self._dealer_bust,
@@ -511,6 +512,7 @@ class Blackjack:
 
             for branch_id in hand.cards_dict:
                 key = f"{hand_id}_{branch_id}"
+
                 cards = [
                     {"rank": card, "suit": suit}
                     for card, suit in zip(hand.cards_dict[branch_id], hand.suits_dict[branch_id])
@@ -520,8 +522,8 @@ class Blackjack:
                 is_soft = hand.soft_dict.get(branch_id, False)
                 is_bust = hand.bust_dict.get(branch_id, False)
 
-                # A branch is finalized when it no longer accepts player input:
-                # settled, busted, surrendered, doubled-down, or positionally past.
+                # A branch is finalized when it no longer accepts player input.
+                # Like: settled, busted, surrendered, doubled-down, or positionally past.
                 is_finalized = (
                     self._phase == "settled"
                     or is_bust
@@ -569,6 +571,7 @@ class Blackjack:
                     key, self._default_outcome(hand_id, branch_id, hand, is_active)
                 )
 
+                # When players' value is inside hard 12~16.
                 is_danger = (
                     not hand.surrendered
                     and not is_soft

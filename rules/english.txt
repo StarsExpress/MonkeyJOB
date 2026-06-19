@@ -1,24 +1,20 @@
 
 1. 6 decks of cards. No hole card for dealer.
 
-2. Minimum bet is 300, maximum bet is 10,000.
-   Must be 100's multiple.
+2. Minimum bet: 300. Maximum bet: 10,000. Must be 100's multiple.
 
 3. Dealers stand on soft 17 (Ex: A & 6).
 
-4. Surrender returns 50% of placed bets.
-   But, not allowed against dealer's Ace.
+4. Surrender returns 50% of placed bets. But, not allowed against dealer's Ace.
 
-5. Blackjack (a combo of A & 10-valued card) pays 3 to 2,
-   which is a profit 150% of placed bets.
+5. Blackjack (a combo of A & 10-valued card) pays 3 to 2, which is a profit 150% of placed bets.
 
-6. A combo of A & 10-valued card after split counts as ordinary 21,
-   not Blackjack.
+6. A combo of Ace & 10-valued card after split is ordinary 21, not Blackjack. Blackjack restricts to initial 2 cards of a hand only.
 
-7. Identically-valued combos (Ex: J & 10) can split 3 times to 4 hands
-   at most, except for Aces, with just once per hand.
+7. If dealer's 1st card is Ace, players can choose to buy insurance by half of original bets. Insurance pays 2 to 1 if dealer has Blackjack. Otherwise, players lose insurance bets.
 
-8. No hits allowed after Aces are split.
+8. Identically-valued combos (like J & 10) can split 3 times to 4 hands at most, except for Aces, with just once per hand.
 
-9. Double down on any 2 cards is allowed,
-   except for Blackjack and split Aces.
+9. No hits allowed for split Aces.
+
+10. Double down on any 2 cards is allowed, except for Blackjack and split Aces. Double down automatically draws exactly 1 more card to make your hand with 3 cards.
