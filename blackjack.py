@@ -592,7 +592,7 @@ class Blackjack:
                         "outcome": outcome,
                         "danger": is_danger,
                         "profit": self._profits.get(key),
-                        "is_aces_split": hand.aces_pair,
+                        "is_aces_split": hand.aces_pair and hand.splits > 0,
                     }
                 )
 
