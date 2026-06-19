@@ -49,12 +49,24 @@ body {
   align-items: center;
   justify-content: center;
   gap: 24px;
+  flex-wrap: wrap;
 }
 .session-logo {
   width: 360px;
-  align-self: stretch;
+  height: 360px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .session-page-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .session-logo {
+    width: 90px;
+    height: 90px;
+  }
 }
 .session-modal {
   background: linear-gradient(160deg, #1a3a24, #0d1f14);
