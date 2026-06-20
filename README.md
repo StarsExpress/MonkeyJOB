@@ -4,7 +4,7 @@
 
 # 🎰JOB: Jack's Online Blackjack
 
-### [🃏 A Fun Off Work JOB's Here Awaiting Click🫰](https://jack-s-onlineblackjack.up.railway.app)
+### [🃏 A Fun Off Work JOB's Here Awaiting Click🫰](https://www.jack-s-onlineblackjack.com)
 
 ---
 
