@@ -1,5 +1,6 @@
 from pathlib import Path
-from fastapi import FastAPI
+from uuid import uuid4
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -8,7 +9,14 @@ from blackjack import Blackjack
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-game = Blackjack()
+sessions: dict[str, Blackjack] = {}
+
+
+def get_game(session_id: str) -> Blackjack:
+    game = sessions.get(session_id)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    return game
 
 
 @app.get("/")
@@ -35,52 +43,58 @@ class InsuranceRequest(BaseModel):
 
 @app.post("/session/new")
 def new_session(req: SessionRequest):
-    return game.new_session(req.player_name, req.capital)
+    session_id = str(uuid4())
+    game = Blackjack()
+    result = game.new_session(req.player_name, req.capital)
+    if "error" not in result:
+        sessions[session_id] = game
+        result["session_id"] = session_id
+    return result
 
 
 @app.post("/round/start")
-def start_round(req: RoundRequest):
-    return game.start_round(req.bets)
+def start_round(req: RoundRequest, session_id: str):
+    return get_game(session_id).start_round(req.bets)
 
 
 @app.post("/round/early_pay")
-def early_pay(req: EarlyPayRequest):
-    return game.make_early_pay(req.choice)
+def early_pay(req: EarlyPayRequest, session_id: str):
+    return get_game(session_id).make_early_pay(req.choice)
 
 
 @app.post("/round/insurance")
-def insurance(req: InsuranceRequest):
-    return game.make_insurance_decision(req.insured_hands)
+def insurance(req: InsuranceRequest, session_id: str):
+    return get_game(session_id).make_insurance_decision(req.insured_hands)
 
 
 @app.post("/round/hit")
-def hit():
-    return game.hit()
+def hit(session_id: str):
+    return get_game(session_id).hit()
 
 
 @app.post("/round/stand")
-def stand():
-    return game.stand()
+def stand(session_id: str):
+    return get_game(session_id).stand()
 
 
 @app.post("/round/double")
-def double():
-    return game.double_down()
+def double(session_id: str):
+    return get_game(session_id).double_down()
 
 
 @app.post("/round/split")
-def split():
-    return game.split()
+def split(session_id: str):
+    return get_game(session_id).split()
 
 
 @app.post("/round/surrender")
-def surrender():
-    return game.surrender()
+def surrender(session_id: str):
+    return get_game(session_id).surrender()
 
 
 @app.get("/income")
-def income():
-    return game.get_incomes()
+def income(session_id: str):
+    return get_game(session_id).get_incomes()
 
 
 _ALLOWED_LANGS = {"english", "traditional", "simplified"}
