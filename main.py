@@ -1,3 +1,6 @@
+import asyncio
+import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import uuid4
 from fastapi import FastAPI, HTTPException
@@ -6,16 +9,46 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from blackjack import Blackjack
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+_CLEANUP_INTERVAL = 600  # Seconds between cleanup runs.
+_SESSION_TTL = 1800  # Seconds of inactivity before a session is evicted.
 
 sessions: dict[str, Blackjack] = {}
+_session_last_active: dict[str, float] = {}
+
+
+async def _cleanup_loop() -> None:
+    while True:
+        await asyncio.sleep(_CLEANUP_INTERVAL)
+        cutoff_time = time.monotonic() - _SESSION_TTL
+
+        stale = [
+            session_id
+            for session_id, last_active_time in list(_session_last_active.items())
+            if last_active_time < cutoff_time
+        ]
+
+        for session_id in stale:
+            sessions.pop(session_id, None)
+            _session_last_active.pop(session_id, None)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    task = asyncio.create_task(_cleanup_loop())
+    yield
+    task.cancel()
+
+
+app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 def get_game(session_id: str) -> Blackjack:
     game = sessions.get(session_id)
     if game is None:
         raise HTTPException(status_code=404, detail="Session not found.")
+
+    _session_last_active[session_id] = time.monotonic()
     return game
 
 
@@ -44,11 +77,15 @@ class InsuranceRequest(BaseModel):
 @app.post("/session/new")
 def new_session(req: SessionRequest):
     session_id = str(uuid4())
+
     game = Blackjack()
     result = game.new_session(req.player_name, req.capital)
+
     if "error" not in result:
         sessions[session_id] = game
+        _session_last_active[session_id] = time.monotonic()
         result["session_id"] = session_id
+
     return result
 
 
@@ -99,8 +136,10 @@ def income(session_id: str):
 
 _ALLOWED_LANGS = {"english", "traditional", "simplified"}
 
+
 @app.get("/rules/{lang}")
 def get_rules(lang: str):
     if lang not in _ALLOWED_LANGS:
         return {"error": "Unknown language."}
+
     return {"content": Path(f"rules/{lang}.txt").read_text(encoding="utf-8")}
