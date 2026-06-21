@@ -14,13 +14,15 @@ const state = {
   numHands: 1,
   phase: 'setup',
   activeBet: 0,       // bet on the currently active branch (for optimistic Double/Split)
+  sessionId: null,
 };
 
 // ── API helpers ────────────────────────────────────────────────────────────────
 async function api(method, path, body) {
+  const url = state.sessionId ? `${path}?session_id=${state.sessionId}` : path;
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body !== undefined) opts.body = JSON.stringify(body);
-  const res = await fetch(path, opts);
+  const res = await fetch(url, opts);
   return res.json();
 }
 
@@ -43,6 +45,7 @@ async function submitSession() {
   const data = await api('POST', '/session/new', { player_name: name, capital });
   if (data.error) { errEl.textContent = data.error; return; }
 
+  state.sessionId = data.session_id;
   state.balance = data.capital;
   renderBalance(state.balance);
   document.getElementById('session-overlay').classList.add('hidden');
