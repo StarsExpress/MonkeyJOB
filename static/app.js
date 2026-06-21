@@ -23,6 +23,13 @@ async function api(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body !== undefined) opts.body = JSON.stringify(body);
   const res = await fetch(url, opts);
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    const msg = typeof payload.detail === 'string'
+      ? payload.detail
+      : (payload.error || 'Server error.');
+    return { error: msg };
+  }
   return res.json();
 }
 
