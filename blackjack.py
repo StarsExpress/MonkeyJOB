@@ -3,7 +3,13 @@ from roles.player import Player
 from utils.judges import judge_blackjack, judge_surrender, judge_split
 from utils.trackers import update_properties, track_display_value
 from configs.hands_config import MIN_DEALER_VALUE, MAX_TOTAL_VALUE, HANDS_RANGE
-from configs.bets_config import MAX_CAPITAL, MIN_BET, MAX_BET, BLACKJACK_PAY
+from configs.bets_config import (
+    MAX_CAPITAL,
+    MIN_BET,
+    MAX_BET,
+    BLACKJACK_PAY,
+    HUGE_PROFIT_RATIO,
+)
 from configs.display_config import DEFAULT_PLAYER_NAME, DANGER_ZONE, MAX_NAME_LEN
 
 
@@ -37,6 +43,10 @@ class Blackjack:
 
         self._initial_capital = 0
         self._profits: dict = dict()
+
+        # Whole-round ROI congrats payload, set once at settlement when the
+        # round clears HUGE_PROFIT_RATIO; None otherwise. See _close_round.
+        self._congrats: dict | None = None
 
         # Keys: hand_branch.
         # Values categories:
@@ -96,6 +106,7 @@ class Blackjack:
 
         self._profits.clear()  # Reset for new round.
         self._outcomes.clear()
+        self._congrats = None
 
         self._bj_early_pay_queue.clear()  # Reset for new round.
         self._early_paid_hands.clear()
@@ -491,11 +502,35 @@ class Blackjack:
             }
         )
 
+        self._flag_huge_profit(total_profit)
+
         self.round_num += 1
         self._phase = "settled"
 
         self._active_hand = None
         self._active_branch = None
+
+    def _flag_huge_profit(self, net_profit: int):
+        """Whole-round ROI check (ported from v1.0.0 POPUP_DICT["huge_profits"]).
+
+        Runs once per round, only here at full settlement. The denominator is
+        every chip committed this round: base bets, double/split added wagers
+        (captured by each branch's chips), and insurance. If net profit over
+        that total clears HUGE_PROFIT_RATIO, flag a one-time congrats payload
+        for the final settlement response to carry; the frontend renders it.
+        """
+        committed = 0
+        for hand in self.player.hands_dict.values():
+            for branch_id in hand.cards_dict:
+                committed += hand.chips_dict.get(branch_id, hand.initial_chips)
+            committed += hand.insurance
+
+        if committed <= 0:
+            return
+
+        ratio = net_profit / committed
+        if ratio >= HUGE_PROFIT_RATIO:
+            self._congrats = {"profit_rate": round(ratio * 100, 1)}
 
     def _serialize(self) -> dict:
         dealer_data = {
@@ -619,6 +654,9 @@ class Blackjack:
             "hands": hands,
             "round": self.round_num,
         }
+
+        if self._phase == "settled" and self._congrats is not None:
+            result["congrats"] = self._congrats
 
         if self._phase == "playing" and self._active_hand:
             result["active_hand"] = self._active_hand

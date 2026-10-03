@@ -7,8 +7,8 @@ class TestShuffleMachine(unittest.TestCase):
 
     def test_update_properties(self):
         """Test functionality of update_properties."""
-        self.assertEqual(update_properties(['A'] * 11), (21, True, False))
-        self.assertEqual(update_properties(['A'] * 12), (12, False, False))
+        self.assertEqual(update_properties(["A"] * 11), (21, True, False))
+        self.assertEqual(update_properties(["A"] * 12), (12, False, False))
 
     def test_track_display_value(self):
         self.assertEqual(track_display_value(18, soft=True, stand=True), "18")
