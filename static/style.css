@@ -31,6 +31,41 @@ body {
   user-select: none;
 }
 
+/* ── ROTATE PROMPT (landscape-only) ── */
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0d1f14;
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+}
+
+.rotate-msg p {
+  margin-top: 16px;
+  font-size: 1.05rem;
+  color: var(--ivory);
+}
+
+.rotate-icon {
+  display: inline-block;
+  font-size: 3rem;
+  animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  0%, 25%   { transform: rotate(0deg); }
+  50%, 100% { transform: rotate(90deg); }
+}
+
+/* Phones and tablets held in portrait. Desktop windows are wide, so they are unaffected. */
+@media (orientation: portrait) and (max-width: 1024px) {
+  .rotate-overlay { display: flex; }
+}
+
 /* ── SESSION OVERLAY ── */
 .session-overlay {
   position: fixed;
@@ -978,4 +1013,32 @@ body {
   padding: 10px 36px;
   font-size: 0.85rem;
   letter-spacing: 0.05em;
+}
+
+/* ── SHORT LANDSCAPE (phones held in landscape) ──
+   Here the limiting dimension is HEIGHT, not width: a full-size header
+   would eat the vertical space the dealer + 6-hand row need. Collapse the
+   top bar into one slim row and trim vertical padding on the table zones.
+   Desktop, tablet, and portrait layouts are untouched. */
+@media (orientation: landscape) and (max-height: 480px) {
+  /* Top bar → one tight single row */
+  .topbar { padding: 4px 14px; }
+  .topbar-title {
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  /* Drop the decorative suits and the long subtitle; keep only "JOB" */
+  .topbar-title .tt-deco,
+  .topbar-title .tt-full { display: none; }
+  .topbar-balance { font-size: 0.72rem; }
+  .topbar-balance span { font-size: 0.82rem; }
+  .topbar-nav { gap: 6px; }
+  .nav-btn { font-size: 0.62rem; padding: 3px 9px; }
+
+  /* Reclaim vertical room so a 6-hand deal fits without scrolling */
+  .dealer-zone { padding: 6px 0 4px; }
+  .dealer-zone .zone-label { margin-bottom: 4px; }
+  .dealer-value-badge { margin-top: 5px; }
+  .player-zone { padding-top: 4px; }
 }
