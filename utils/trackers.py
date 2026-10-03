@@ -1,7 +1,8 @@
-from configs.rules_config import CARD_TO_VALUE_DICT, MAX_TOTAL_VALUE, MIN_DEALER_VALUE
+from configs.cards_config import CARD_TO_VALUE_DICT
+from configs.hands_config import MAX_TOTAL_VALUE, MIN_DEALER_VALUE
 
 
-def update_properties(cards_list: list[str]):
+def update_properties(cards_list: list[str]) -> tuple[int, bool, bool]:
     """
     Update properties of a hand based on given list of cards.
 
@@ -9,14 +10,17 @@ def update_properties(cards_list: list[str]):
         cards_list (list[str]): list of cards in given hand.
 
     Returns:
-        tuple: tuple of hand value, a boolean telling if hand is soft, and a boolean telling if hand is busted.
+        tuple[int, bool, bool]: tuple of hand value, a boolean telling if hand is soft,
+               and a boolean telling if hand is busted.
     """
     soft = False
     value = sum([CARD_TO_VALUE_DICT[cards] for cards in cards_list])
 
     if "A" in cards_list:
         value -= 10 * cards_list.count("A")  # Count all Aces as 1 for each first.
-        if value + 10 <= MAX_TOTAL_VALUE:  # Given hand is soft if an Ace can count as 11 without bust.
+        if (
+            value + 10 <= MAX_TOTAL_VALUE
+        ):  # Given hand is soft if an Ace can count as 11 without bust.
             value += 10  # Take the greatest possible total value.
             soft = True
 
@@ -32,7 +36,7 @@ def track_display_value(
     stand: bool = False,
     soft: bool = False,
     bust: bool = False,
-):
+) -> str:
     """
     Track hand value to be displayed on game page.
 
@@ -50,18 +54,22 @@ def track_display_value(
     """
     if blackjack:
         return "Blackjack"
-    if dealer & check_bj_only:
+
+    if dealer and check_bj_only:
         return "No Blackjack"
+
     if bust:
         return "Busted"
 
     # Show both possible values in either case.
     # 1. Player's soft hand hasn't stood, and is under 21.
-    if (dealer is False) & soft & (stand is False) & (value < MAX_TOTAL_VALUE):
-        return "/".join([str(value), str(value - 10)])
+    if not dealer and soft:
+        if not stand and (value < MAX_TOTAL_VALUE):
+            return "/".join([str(value), str(value - 10)])
 
     # 2. Dealer's soft hand is under required value.
-    if dealer & soft & (value < MIN_DEALER_VALUE):
-        return "/".join([str(value), str(value - 10)])
+    if dealer and soft:
+        if value < MIN_DEALER_VALUE:
+            return "/".join([str(value), str(value - 10)])
 
     return str(value)

@@ -1,0 +1,19 @@
+{
+  "name": "MonkeyJOB",
+  "short_name": "MonkeyJOB",
+  "description": "Jack's Online Blackjack — a Macau-rules Blackjack game.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0d1f14",
+  "theme_color": "#0d1f14",
+  "icons": [
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
