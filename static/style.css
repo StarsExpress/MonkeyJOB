@@ -24,7 +24,12 @@ body {
   font-family: 'Inter', sans-serif;
   background: #0d1f14;
   color: var(--ivory);
+  /* dvh excludes current browser chrome (Safari address/tab bars); the vh
+     line is a fallback for older browsers. Without this, 100vh in mobile
+     Safari is taller than the usable area and the bottom action bar is
+     pushed off-screen. */
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1129,6 +1134,7 @@ body {
     width: auto;
     height: auto;
     max-height: 86vh;
+    max-height: 86dvh;
     max-width: 38vw;
     flex-shrink: 1;
     min-width: 0;
