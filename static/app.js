@@ -1,27 +1,30 @@
+// Functions below are called from inline onclick="…" handlers in index.html,
+// which ESLint's no-unused-vars can't see.
+/* exported addBet, clearBet, deal, doEarlyPay, doHit, doStand, doDouble, doSplit, doSurrender, nextRound, newSession, showIncome, hideIncome, showRules, switchRulesLang, doInsurance, showGitHub */
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MIN_BET = 300;
 const MAX_BET = 10000;
 const MAX_NAME_LEN = 50;
 
 const SUIT_SYMBOL = { S: '♠', H: '♥', D: '♦', C: '♣' };
-const SUIT_COLOR  = { S: 'black', H: 'red', D: 'red', C: 'black' };
+const SUIT_COLOR = { S: 'black', H: 'red', D: 'red', C: 'black' };
 
 // Whole-round "huge profit" congrats popup (ported from v1.0.0). The server
 // decides whether it fires (sends `congrats.profit_rate`); these are the
 // display strings only.
 const HUGE_PROFIT_POPUP = {
   title: '🎉 Huge Profit! 🎉',
-  body: rate => `💵 ${rate}% Profit Rate 🍾`,
+  body: (rate) => `💵 ${rate}% Profit Rate 🍾`,
 };
 
 // ── State ──────────────────────────────────────────────────────────────────────
 const state = {
   balance: 0,
-  bets: [0],          // one entry per hand
-  selectedHand: 0,    // 0-indexed: which hand is currently being configured
+  bets: [0], // one entry per hand
+  selectedHand: 0, // 0-indexed: which hand is currently being configured
   numHands: 1,
   phase: 'setup',
-  activeBet: 0,       // bet on the currently active branch (for optimistic Double/Split)
+  activeBet: 0, // bet on the currently active branch (for optimistic Double/Split)
   sessionId: null,
 };
 
@@ -33,9 +36,10 @@ async function api(method, path, body) {
   const res = await fetch(url, opts);
   if (!res.ok) {
     const payload = await res.json().catch(() => ({}));
-    const msg = typeof payload.detail === 'string'
-      ? payload.detail
-      : (payload.error || 'Server error.');
+    const msg =
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : payload.error || 'Server error.';
     return { error: msg };
   }
   return res.json();
@@ -43,9 +47,9 @@ async function api(method, path, body) {
 
 // ── Session setup ──────────────────────────────────────────────────────────────
 async function submitSession() {
-  const name    = document.getElementById('player-name').value.trim();
+  const name = document.getElementById('player-name').value.trim();
   const capital = parseInt(document.getElementById('player-capital').value, 10);
-  const errEl   = document.getElementById('session-error');
+  const errEl = document.getElementById('session-error');
 
   if (name.length > MAX_NAME_LEN) {
     errEl.textContent = `Name must be ${MAX_NAME_LEN} characters or fewer.`;
@@ -57,8 +61,14 @@ async function submitSession() {
   }
   errEl.textContent = '';
 
-  const data = await api('POST', '/session/new', { player_name: name, capital });
-  if (data.error) { errEl.textContent = data.error; return; }
+  const data = await api('POST', '/session/new', {
+    player_name: name,
+    capital,
+  });
+  if (data.error) {
+    errEl.textContent = data.error;
+    return;
+  }
 
   state.sessionId = data.session_id;
   state.balance = data.capital;
@@ -75,8 +85,8 @@ function showSessionOverlay() {
   document.getElementById('session-overlay').classList.remove('hidden');
 }
 
-['player-name', 'player-capital'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
+['player-name', 'player-capital'].forEach((id) => {
+  document.getElementById(id).addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submitSession();
   });
 });
@@ -92,7 +102,7 @@ function enterBettingPhase() {
   buildCountBtns();
   buildHandSelBtns();
   updateBetDisplay();
-  renderBalance(state.balance);  // bets reset to 0; restore full balance
+  renderBalance(state.balance); // bets reset to 0; restore full balance
   clearTable();
   hideHugeProfit();
 }
@@ -136,7 +146,8 @@ function buildHandSelBtns() {
 
   for (let i = 0; i < state.numHands; i++) {
     const btn = document.createElement('button');
-    btn.className = 'hand-sel-btn' + (i === state.selectedHand ? ' selected' : '');
+    btn.className =
+      'hand-sel-btn' + (i === state.selectedHand ? ' selected' : '');
     btn.dataset.idx = i;
     btn.innerHTML =
       `<span class="hs-label">H${i + 1}</span>` +
@@ -185,7 +196,10 @@ function refreshHandSelBet(i) {
 // ── Inline bet input commit ────────────────────────────────────────────────────
 function commitBetInput() {
   const raw = document.getElementById('bet-display').value.replace(/\D/g, '');
-  if (!raw) { updateBetDisplay(); return; }
+  if (!raw) {
+    updateBetDisplay();
+    return;
+  }
   const val = parseInt(raw, 10);
   if (val < MIN_BET) {
     showBetError(`Minimum bet is $${MIN_BET.toLocaleString()}.`);
@@ -224,12 +238,16 @@ async function deal() {
   for (let i = 0; i < state.numHands; i++) {
     const b = state.bets[i];
     if (b < MIN_BET) {
-      showBetError(`Hand ${i + 1} needs at least $${MIN_BET.toLocaleString()}.`);
+      showBetError(
+        `Hand ${i + 1} needs at least $${MIN_BET.toLocaleString()}.`,
+      );
       if (state.numHands > 1) selectBettingHand(i);
       return;
     }
     if (b > MAX_BET) {
-      showBetError(`Hand ${i + 1} bet exceeds max $${MAX_BET.toLocaleString()}.`);
+      showBetError(
+        `Hand ${i + 1} bet exceeds max $${MAX_BET.toLocaleString()}.`,
+      );
       return;
     }
     if (b % 100 !== 0) {
@@ -245,7 +263,10 @@ async function deal() {
   }
 
   const data = await api('POST', '/round/start', { bets: state.bets });
-  if (data.error) { showBetError(data.error); return; }
+  if (data.error) {
+    showBetError(data.error);
+    return;
+  }
 
   await updateUI(data);
 }
@@ -256,8 +277,12 @@ async function doEarlyPay(choice) {
 }
 
 // ── Playing moves ──────────────────────────────────────────────────────────────
-async function doHit()      { await updateUI(await api('POST', '/round/hit')); }
-async function doStand()    { await updateUI(await api('POST', '/round/stand')); }
+async function doHit() {
+  await updateUI(await api('POST', '/round/hit'));
+}
+async function doStand() {
+  await updateUI(await api('POST', '/round/stand'));
+}
 async function doDouble() {
   state.balance -= state.activeBet;
   renderBalance(state.balance);
@@ -268,18 +293,27 @@ async function doSplit() {
   renderBalance(state.balance);
   await updateUI(await api('POST', '/round/split'));
 }
-async function doSurrender(){ await updateUI(await api('POST', '/round/surrender')); }
+async function doSurrender() {
+  await updateUI(await api('POST', '/round/surrender'));
+}
 
 // ── Phase transitions ──────────────────────────────────────────────────────────
-function nextRound()  { enterBettingPhase(); }
-function newSession() { showSessionOverlay(); }
+function nextRound() {
+  enterBettingPhase();
+}
+function newSession() {
+  showSessionOverlay();
+}
 
 // ── Master UI update ───────────────────────────────────────────────────────────
 async function updateUI(data) {
-  if (!data || data.error) { showMsg(data?.error || 'Server error'); return; }
+  if (!data || data.error) {
+    showMsg(data?.error || 'Server error');
+    return;
+  }
 
   state.balance = data.capital;
-  state.phase   = data.phase;
+  state.phase = data.phase;
   renderBalance(data.capital);
 
   if (data.phase === 'settled') {
@@ -304,10 +338,14 @@ async function updateUI(data) {
     renderHands(data.hands, data.phase);
     if (data.phase === 'playing') {
       if (data.active_hand && data.active_branch) {
-        const ah = data.hands.find(h => h.id === data.active_hand);
-        const ab = ah && ah.branches.find(b => b.id === data.active_branch);
+        const ah = data.hands.find((h) => h.id === data.active_hand);
+        const ab = ah && ah.branches.find((b) => b.id === data.active_branch);
         if (ab) state.activeBet = ab.bet;
-        if (ab && ab.is_aces_split) { showPhase('playing'); setPlayButtons([]); return; }
+        if (ab && ab.is_aces_split) {
+          showPhase('playing');
+          setPlayButtons([]);
+          return;
+        }
       }
       showPhase('playing');
       setPlayButtons(data.moves || []);
@@ -323,12 +361,17 @@ async function updateUI(data) {
 
 // ── Rendering helpers ─────────────────────────────────────────────────────────
 // Outcomes whose profit is decided before dealer draws (show during animation).
-const PRE_DECIDED_OUTCOMES = new Set(['bust', 'surrendered', 'early_pay', 'bj_auto']);
+const PRE_DECIDED_OUTCOMES = new Set([
+  'bust',
+  'surrendered',
+  'early_pay',
+  'bj_auto',
+]);
 
 function withPreDecidedProfitsOnly(hands) {
-  return hands.map(h => ({
+  return hands.map((h) => ({
     ...h,
-    branches: h.branches.map(b => ({
+    branches: h.branches.map((b) => ({
       ...b,
       profit: PRE_DECIDED_OUTCOMES.has(b.outcome) ? b.profit : null,
     })),
@@ -337,7 +380,8 @@ function withPreDecidedProfitsOnly(hands) {
 
 // ── Rendering ──────────────────────────────────────────────────────────────────
 function renderBalance(amount) {
-  document.getElementById('balance').textContent = '$' + amount.toLocaleString();
+  document.getElementById('balance').textContent =
+    '$' + amount.toLocaleString();
 }
 
 // Show balance minus committed bets; called whenever bet amounts change during betting phase.
@@ -348,19 +392,22 @@ function renderBettingBalance() {
 
 function renderDealer(dealer) {
   const hand = document.getElementById('dealer-hand');
-  const val  = document.getElementById('dealer-val');
+  const val = document.getElementById('dealer-val');
   hand.innerHTML = '';
-  dealer.cards.forEach(c => hand.appendChild(makeCardEl(c.rank, c.suit)));
+  dealer.cards.forEach((c) => hand.appendChild(makeCardEl(c.rank, c.suit)));
   val.textContent = dealer.value_text;
 }
 
 // Animate dealer reveal card-by-card with 1-second delays (Fix 3).
 async function animateDealerReveal(dealer) {
   const hand = document.getElementById('dealer-hand');
-  const val  = document.getElementById('dealer-val');
+  const val = document.getElementById('dealer-val');
   hand.innerHTML = '';
 
-  if (!dealer.cards.length) { val.textContent = dealer.value_text; return; }
+  if (!dealer.cards.length) {
+    val.textContent = dealer.value_text;
+    return;
+  }
 
   // First card was visible during play — appear immediately, badge shows rank only.
   hand.appendChild(makeCardEl(dealer.cards[0].rank, dealer.cards[0].suit));
@@ -368,7 +415,7 @@ async function animateDealerReveal(dealer) {
 
   // Each subsequent card drawn by the dealer appears after a 1-second pause.
   for (let i = 1; i < dealer.cards.length; i++) {
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     hand.appendChild(makeCardEl(dealer.cards[i].rank, dealer.cards[i].suit));
   }
 
@@ -408,14 +455,19 @@ function makeBranchEl(branch, phase, handSplits = 0) {
 
   if (branch.active) {
     stateClass = 'active';
-  } else if (oc === 'won' || oc === 'bj' || oc === 'bj_auto' || oc === 'early_pay') {
+  } else if (
+    oc === 'won' ||
+    oc === 'bj' ||
+    oc === 'bj_auto' ||
+    oc === 'early_pay'
+  ) {
     stateClass = 'won';
   } else if (oc === 'bust' || oc === 'lost') {
     stateClass = 'bust';
   } else if (oc === 'push' || oc === 'surrendered') {
     stateClass = 'push';
   } else if (oc === 'bj_pending') {
-    stateClass = 'active';   // highlight the hand needing a decision
+    stateClass = 'active'; // highlight the hand needing a decision
   } else if (branch.bust) {
     stateClass = 'bust';
   }
@@ -441,7 +493,7 @@ function makeBranchEl(branch, phase, handSplits = 0) {
   // Cards
   const cardsRow = document.createElement('div');
   cardsRow.className = 'hand-cards-row';
-  branch.cards.forEach(c => cardsRow.appendChild(makeCardEl(c.rank, c.suit)));
+  branch.cards.forEach((c) => cardsRow.appendChild(makeCardEl(c.rank, c.suit)));
   el.appendChild(cardsRow);
 
   // Info row
@@ -451,10 +503,13 @@ function makeBranchEl(branch, phase, handSplits = 0) {
   const valEl = document.createElement('div');
   valEl.className = 'hand-value';
   // Post-split A+10 is never Blackjack — clamp to numeric value as a hard frontend guard.
-  const vt = (handSplits > 0 && branch.value_text === 'Blackjack') ? '21' : branch.value_text;
-  if (vt === 'Busted' || branch.bust)  valEl.classList.add('bust-val');
-  else if (vt === 'Blackjack')         valEl.classList.add('bj-val');
-  else if (branch.danger)              valEl.classList.add('danger-val');
+  const vt =
+    handSplits > 0 && branch.value_text === 'Blackjack'
+      ? '21'
+      : branch.value_text;
+  if (vt === 'Busted' || branch.bust) valEl.classList.add('bust-val');
+  else if (vt === 'Blackjack') valEl.classList.add('bj-val');
+  else if (branch.danger) valEl.classList.add('danger-val');
   valEl.textContent = vt;
   info.appendChild(valEl);
 
@@ -466,7 +521,8 @@ function makeBranchEl(branch, phase, handSplits = 0) {
   if (branch.profit !== null && branch.profit !== undefined) {
     const pEl = document.createElement('div');
     const sign = branch.profit > 0 ? '+' : branch.profit < 0 ? '-' : '';
-    pEl.className = 'profit-badge ' +
+    pEl.className =
+      'profit-badge ' +
       (branch.profit > 0 ? 'win' : branch.profit < 0 ? 'lose' : 'push');
     pEl.textContent = sign + '$' + Math.abs(branch.profit).toLocaleString();
     info.appendChild(pEl);
@@ -487,8 +543,8 @@ function makeCardEl(rank, suit) {
 }
 
 function renderEarlyPayInfo(handId, chips) {
-  const earlyPay  = chips;         // 1× profit (same as bet)
-  const waitPay   = Math.floor(chips * 1.5);  // 1.5× potential profit
+  const earlyPay = chips; // 1× profit (same as bet)
+  const waitPay = Math.floor(chips * 1.5); // 1.5× potential profit
 
   document.getElementById('early-pay-info').innerHTML =
     `Hand ${handId} has <strong>Blackjack!</strong> ` +
@@ -506,16 +562,17 @@ function renderEarlyPayInfo(handId, chips) {
 function showPhase(phase) {
   const phases = ['betting', 'early-pay', 'insurance', 'playing', 'settled'];
   for (const p of phases) {
-    document.getElementById(`phase-${p}`).style.display = p === phase ? 'flex' : 'none';
+    document.getElementById(`phase-${p}`).style.display =
+      p === phase ? 'flex' : 'none';
   }
 }
 
 function setPlayButtons(moves) {
-  document.getElementById('btn-hit').disabled     = !moves.includes('hit');
-  document.getElementById('btn-stand').disabled   = !moves.includes('stand');
-  document.getElementById('btn-double').disabled  = !moves.includes('double');
-  document.getElementById('btn-split').disabled   = !moves.includes('split');
-  document.getElementById('btn-sur').disabled     = !moves.includes('surrender');
+  document.getElementById('btn-hit').disabled = !moves.includes('hit');
+  document.getElementById('btn-stand').disabled = !moves.includes('stand');
+  document.getElementById('btn-double').disabled = !moves.includes('double');
+  document.getElementById('btn-split').disabled = !moves.includes('split');
+  document.getElementById('btn-sur').disabled = !moves.includes('surrender');
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -538,23 +595,26 @@ function flashRoundResult(hands) {
     for (const branch of hand.branches)
       if (branch.profit != null) totalProfit += branch.profit;
 
-  if (totalProfit > 0)      showMsg(`+$${totalProfit.toLocaleString()} 🎉`);
-  else if (totalProfit < 0) showMsg(`-$${Math.abs(totalProfit).toLocaleString()}`);
-  else                      showMsg('Push — no change');
+  if (totalProfit > 0) showMsg(`+$${totalProfit.toLocaleString()} 🎉`);
+  else if (totalProfit < 0)
+    showMsg(`-$${Math.abs(totalProfit).toLocaleString()}`);
+  else showMsg('Push — no change');
 }
 
 // ── Income modal ───────────────────────────────────────────────────────────────
 async function showIncome() {
   const data = await api('GET', '/income');
-  const tbl  = document.getElementById('income-table-body');
+  const tbl = document.getElementById('income-table-body');
 
   tbl.innerHTML = '';
   if (!data.length) {
-    tbl.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--ivory-dim)">No rounds played yet.</td></tr>';
+    tbl.innerHTML =
+      '<tr><td colspan="3" style="text-align:center;color:var(--ivory-dim)">No rounds played yet.</td></tr>';
   } else {
     for (const row of data) {
       const tr = document.createElement('tr');
-      const cls = row.Profit > 0 ? 'profit-pos' : row.Profit < 0 ? 'profit-neg' : '';
+      const cls =
+        row.Profit > 0 ? 'profit-pos' : row.Profit < 0 ? 'profit-neg' : '';
       const sign = row.Profit > 0 ? '+' : row.Profit < 0 ? '-' : '';
       tr.innerHTML =
         `<td>${row.Round}</td>` +
@@ -572,7 +632,7 @@ function hideIncome() {
 }
 
 // ── Rules modal ────────────────────────────────────────────────────────────────
-let _rulesLang  = 'english';
+let _rulesLang = 'english';
 const _rulesCache = {};
 
 function showRules() {
@@ -587,14 +647,19 @@ function hideRules() {
 
 function switchRulesLang(lang) {
   _rulesLang = lang;
-  document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+  document
+    .querySelectorAll('.lang-tab')
+    .forEach((t) => t.classList.remove('active'));
   document.getElementById(`tab-${lang}`).classList.add('active');
   _loadRules(lang);
 }
 
 async function _loadRules(lang) {
   const contentEl = document.getElementById('rules-content');
-  if (_rulesCache[lang]) { contentEl.innerHTML = _rulesCache[lang]; return; }
+  if (_rulesCache[lang]) {
+    contentEl.innerHTML = _rulesCache[lang];
+    return;
+  }
 
   contentEl.innerHTML = '<p style="color:var(--ivory-dim)">Loading…</p>';
   const data = await api('GET', `/rules/${lang}`);
@@ -605,7 +670,7 @@ async function _loadRules(lang) {
     .trim()
     .split(/\n\n+/)
     .filter(Boolean)
-    .map(block => {
+    .map((block) => {
       const safe = block
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -629,7 +694,7 @@ function renderInsuranceToggles(insuranceHands) {
   for (const k in _insuranceSelected) delete _insuranceSelected[k];
 
   for (const hand of insuranceHands) {
-    _insuranceSelected[hand.hand_id] = true;  // default: all selected
+    _insuranceSelected[hand.hand_id] = true; // default: all selected
 
     const btn = document.createElement('button');
     btn.className = 'ins-toggle-btn selected';
@@ -646,7 +711,9 @@ function renderInsuranceToggles(insuranceHands) {
 }
 
 async function doInsurance() {
-  const insured_hands = Object.keys(_insuranceSelected).filter(hid => _insuranceSelected[hid]);
+  const insured_hands = Object.keys(_insuranceSelected).filter(
+    (hid) => _insuranceSelected[hid],
+  );
   await updateUI(await api('POST', '/round/insurance', { insured_hands }));
 }
 
@@ -676,7 +743,7 @@ function hideGitHub() {
 }
 
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown', () => {
   // bet-display handled via its own listeners in DOMContentLoaded
 });
 
@@ -684,7 +751,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('DOMContentLoaded', () => {
   const betEl = document.getElementById('bet-display');
 
-  betEl.addEventListener('focus', function() {
+  betEl.addEventListener('focus', function () {
     const val = state.bets[state.selectedHand];
     this.value = val > 0 ? String(val) : '';
     this.select();
@@ -692,31 +759,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
   betEl.addEventListener('blur', commitBetInput);
 
-  betEl.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { this.blur(); return; }
-    if (e.key === 'Escape') { updateBetDisplay(); this.blur(); return; }
+  betEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      this.blur();
+      return;
+    }
+    if (e.key === 'Escape') {
+      updateBetDisplay();
+      this.blur();
+      return;
+    }
     // Allow: digits, backspace, delete, arrows, tab, ctrl/meta combos
-    if (!e.ctrlKey && !e.metaKey && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+    if (
+      !e.ctrlKey &&
+      !e.metaKey &&
+      e.key.length === 1 &&
+      !/[0-9]/.test(e.key)
+    ) {
       e.preventDefault();
     }
   });
 
   // Close rules modal when clicking the backdrop (but NOT when clicking inside the card).
-  document.getElementById('rules-modal').addEventListener('click', e => {
+  document.getElementById('rules-modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) hideRules();
   });
 
   // Close rules modal via the X button.
-  document.getElementById('rules-close-btn').addEventListener('click', hideRules);
+  document
+    .getElementById('rules-close-btn')
+    .addEventListener('click', hideRules);
 
   // Close GitHub modal when clicking the backdrop or the X button.
-  document.getElementById('github-modal').addEventListener('click', e => {
+  document.getElementById('github-modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) hideGitHub();
   });
-  document.getElementById('github-close-btn').addEventListener('click', hideGitHub);
+  document
+    .getElementById('github-close-btn')
+    .addEventListener('click', hideGitHub);
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  showPhase('betting');  // All panels start hidden; session overlay shows first
+  showPhase('betting'); // All panels start hidden; session overlay shows first
 });

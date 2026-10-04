@@ -1,0 +1,16 @@
+{
+  "name": "monkeyjob-frontend",
+  "private": true,
+  "description": "MonkeyJOB frontend tooling (JavaScript lint and format)",
+  "scripts": {
+    "lint:js": "eslint static/ && prettier --check \"static/**/*.js\"",
+    "format:js": "prettier --write \"static/**/*.js\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^9.1.2",
+    "globals": "^15.15.0",
+    "prettier": "^3.9.9"
+  }
+}

@@ -12,12 +12,15 @@
 [![macOS](https://img.shields.io/badge/macOS-A2AAAD?style=for-the-badge&logo=apple&logoColor=black)](https://www.jack-s-onlineblackjack.com)
 [![Windows](https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://www.jack-s-onlineblackjack.com)
 
+---
+
 ### 🛰️ Metadata
 
 [![main Unit Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
 [![main Component Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/component_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
 [![main Integration Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
 [![main Black Lint](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/black-lint.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
+[![main JavaScript Lint](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/javascript-lint.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
 [![Latest Release](https://img.shields.io/github/v/release/StarsExpress/MonkeyJOB)](https://github.com/StarsExpress/MonkeyJOB/releases)
 
 ---
