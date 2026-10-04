@@ -1085,4 +1085,44 @@ body {
   .dealer-zone .zone-label { margin-bottom: 4px; }
   .dealer-value-badge { margin-top: 5px; }
   .player-zone { padding-top: 4px; }
+
+  /* ── INTRO / SESSION OVERLAY → two columns ──
+     Height is the scarce dimension here, so lay the logo and the form
+     side by side and scale the logo by height. The form (fields + Enter
+     Table) must always be fully visible; if room runs out, the logo
+     shrinks, never the form. */
+  .session-overlay { padding: 8px 14px; }
+  .session-page-row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 18px;
+    align-items: center;
+    width: 100%;
+    max-width: 840px;
+  }
+  .session-logo {
+    width: auto;
+    height: auto;
+    max-height: 86vh;
+    max-width: 38vw;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .session-modal {
+    padding: 16px 22px;
+    gap: 9px;
+    width: auto;
+    max-width: 56vw;
+    flex-shrink: 0;
+  }
+  .session-modal h2 {
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+  }
+  .session-field { gap: 4px; }
+  .session-field label { font-size: 0.62rem; letter-spacing: 0.1em; }
+  .session-field input { font-size: 0.85rem; padding: 7px 12px; }
+  .session-error { font-size: 0.66rem; min-height: 0.8em; }
+  .session-submit { padding: 9px; font-size: 0.82rem; margin-top: 2px; }
 }
