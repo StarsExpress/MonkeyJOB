@@ -65,12 +65,12 @@ class TestStartRoundValidation(unittest.TestCase):
         self.assertIn("error", result)
 
     def test_valid_bet_clears_error(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),
-                ('7', '8', 'D', 'H'),
+                ("6", "S"),
+                ("7", "8", "D", "H"),
             ],
         ):
             result = self.game.start_round([500])
@@ -86,13 +86,13 @@ class TestPlayerBusts(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def test_phase_is_settled(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),  # Dealer 1st card is 6.
-                ('7', '8', 'D', 'H'),  # Player has 7 + 8 = 15.
-                ('K', 'C'),  # Player hits K: 15 becomes busted 25.
+                ("6", "S"),  # Dealer 1st card is 6.
+                ("7", "8", "D", "H"),  # Player has 7 + 8 = 15.
+                ("K", "C"),  # Player hits K: 15 becomes busted 25.
             ],
         ):
 
@@ -102,13 +102,13 @@ class TestPlayerBusts(unittest.TestCase):
         self.assertEqual(result["phase"], "settled")
 
     def test_busted_outcome(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),
-                ('9', '8', 'D', 'H'),
-                ('K', 'C'),
+                ("6", "S"),
+                ("9", "8", "D", "H"),
+                ("K", "C"),
             ],
         ):
 
@@ -119,13 +119,13 @@ class TestPlayerBusts(unittest.TestCase):
         self.assertEqual(outcome, "bust")
 
     def test_capital_reduction(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),
-                ('9', '8', 'D', 'H'),
-                ('K', 'C'),
+                ("6", "S"),
+                ("9", "8", "D", "H"),
+                ("K", "C"),
             ],
         ):
 
@@ -135,13 +135,13 @@ class TestPlayerBusts(unittest.TestCase):
         self.assertEqual(self.game.capital, 9500)
 
     def test_income_records_loss_entry(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),
-                ('9', '8', 'D', 'H'),
-                ('K', 'C'),
+                ("6", "S"),
+                ("9", "8", "D", "H"),
+                ("K", "C"),
             ],
         ):
 
@@ -160,14 +160,14 @@ class TestPlayerWinsDealerBusts(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),  # Dealer 1st card is 6.
-                ('9', '8', 'D', 'H'),  # Player has 9 + 8 = 17.
-                ('8', 'C'),  # Dealer draws 8: 6 becomes 14.
-                ('9', 'D'),  # Dealer draws 9: 14 becomes busted 23.
+                ("6", "S"),  # Dealer 1st card is 6.
+                ("9", "8", "D", "H"),  # Player has 9 + 8 = 17.
+                ("8", "C"),  # Dealer draws 8: 6 becomes 14.
+                ("9", "D"),  # Dealer draws 9: 14 becomes busted 23.
             ],
         ):
 
@@ -204,14 +204,14 @@ class TestPush(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),  # Dealer 1st card is 6.
-                ('K', '9', 'D', 'H'),  # Player has K + 9 = 19.
-                ('K', 'C'),  # Dealer draws K: 6 becomes 16.
-                ('3', 'D'),  # Dealer draws 3: 16 becomes 19.
+                ("6", "S"),  # Dealer 1st card is 6.
+                ("K", "9", "D", "H"),  # Player has K + 9 = 19.
+                ("K", "C"),  # Dealer draws K: 6 becomes 16.
+                ("3", "D"),  # Dealer draws 3: 16 becomes 19.
             ],
         ):
 
@@ -240,12 +240,12 @@ class TestBlackjackAutoPay(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('6', 'S'),  # Dealer 1st card is 9.
-                ('A', 'K', 'D', 'H'),  # Player has A + K = Blackjack.
+                ("6", "S"),  # Dealer 1st card is 9.
+                ("A", "K", "D", "H"),  # Player has A + K = Blackjack.
             ],
         ):
 
@@ -277,19 +277,19 @@ class TestEarlyPayTake(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),  # Dealer 1st card is A.
-                ('A', 'K', 'D', 'H'),  # Player has A + K: Blackjack.
+                ("A", "S"),  # Dealer 1st card is A.
+                ("A", "K", "D", "H"),  # Player has A + K: Blackjack.
             ],
         ):
 
             self.game.start_round([500])
 
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
-            self.game.machine, 'draw', side_effect=[]
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine, "draw", side_effect=[]
         ):
             return self.game.make_early_pay("take")
 
@@ -311,12 +311,12 @@ class TestEarlyPayTake(unittest.TestCase):
         self.assertEqual(self.game.incomes[0]["Profit"], 500)
 
     def test_phase_is_marked_early_pay(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('A', 'K', 'D', 'H'),
+                ("A", "S"),
+                ("A", "K", "D", "H"),
             ],
         ):
             result = self.game.start_round([500])
@@ -332,13 +332,13 @@ class TestEarlyPayWaitDealerBlackjack(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),  # Dealer 1st card is A.
-                ('A', 'K', 'D', 'H'),  # Player has A + K: Blackjack.
-                ('K', 'C'),  # Dealer has A + K: Blackjack.
+                ("A", "S"),  # Dealer 1st card is A.
+                ("A", "K", "D", "H"),  # Player has A + K: Blackjack.
+                ("K", "C"),  # Dealer has A + K: Blackjack.
             ],
         ):
 
@@ -371,12 +371,12 @@ class TestSurrender(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('J', 'S'),  # Dealer 1st card is J.
-                ('Q', '6', 'D', 'H'),  # Player has Q + 6 = 16.
+                ("J", "S"),  # Dealer 1st card is J.
+                ("Q", "6", "D", "H"),  # Player has Q + 6 = 16.
             ],
         ):
 
@@ -401,12 +401,12 @@ class TestSurrender(unittest.TestCase):
         self.assertEqual(self.game.incomes[0]["Profit"], -250)
 
     def test_surrender_in_available_moves(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('J', 'S'),
-                ('Q', '6', 'D', 'H'),
+                ("J", "S"),
+                ("Q", "6", "D", "H"),
             ],
         ):
 
@@ -423,14 +423,14 @@ class TestDoubleDown(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('8', 'S'),  # Dealer 1st card is 8.
-                ('5', '6', 'D', 'H'),  # Player has 5 + 6 = 11.
-                ('K', 'C'),  # Double down draws K: 11 becomes 21.
-                ('Q', 'C'),  # Dealer draws Q: 8 becomes 18.
+                ("8", "S"),  # Dealer 1st card is 8.
+                ("5", "6", "D", "H"),  # Player has 5 + 6 = 11.
+                ("K", "C"),  # Double down draws K: 11 becomes 21.
+                ("Q", "C"),  # Dealer draws Q: 8 becomes 18.
             ],
         ):
 
@@ -464,12 +464,12 @@ class TestDoubleDown(unittest.TestCase):
         self.assertEqual(self.game.incomes[0]["Profit"], 1000)
 
     def test_double_down_in_available_moves(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('8', 'S'),
-                ('5', '6', 'D', 'H'),
+                ("8", "S"),
+                ("5", "6", "D", "H"),
             ],
         ):
 
@@ -486,17 +486,17 @@ class TestSplit(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def _run_round(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('5', 'S'),  # Dealer 1st card is 5.
-                ('8', '8', 'D', 'H'),  # Player has 8 + 8 pair.
-                ('J', 'C'),  # Player splits: branch 1 = 8 + J = 18.
-                ('5', 'D'),  # Reload branch 2 to 8 + 5 = 13.
-                ('2', 'S'),  # Ineffective reload: branch 3 doesn't exist.
-                ('J', 'C'),  # Dealer draws J: 5 becomes 15.
-                ('4', 'H'),  # Dealer draws 4: 15 becomes 19.
+                ("5", "S"),  # Dealer 1st card is 5.
+                ("8", "8", "D", "H"),  # Player has 8 + 8 pair.
+                ("J", "C"),  # Player splits: branch 1 = 8 + J = 18.
+                ("5", "D"),  # Reload branch 2 to 8 + 5 = 13.
+                ("2", "S"),  # Ineffective reload: branch 3 doesn't exist.
+                ("J", "C"),  # Dealer draws J: 5 becomes 15.
+                ("4", "H"),  # Dealer draws 4: 15 becomes 19.
             ],
         ):
 
@@ -515,7 +515,7 @@ class TestSplit(unittest.TestCase):
 
     def test_split_counter(self):
         self._run_round()
-        hand = self.game.player.hands_dict['1']
+        hand = self.game.player.hands_dict["1"]
         self.assertEqual(hand.splits, 1)
 
     def test_capital_reduction(self):
@@ -535,12 +535,12 @@ class TestSplit(unittest.TestCase):
         self.assertEqual(branches[1]["outcome"], "lost")
 
     def test_split_in_available_moves(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('5', 'S'),
-                ('8', '8', 'D', 'H'),
+                ("5", "S"),
+                ("8", "8", "D", "H"),
             ],
         ):
 
@@ -557,12 +557,12 @@ class TestInsurance(unittest.TestCase):
         self.game.new_session("Alice", 10000)
 
     def test_insurance_phase_against_dealer_ace(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),  # Dealer 1st card is A.
-                ('7', '8', 'D', 'H'),  # Player doesn't have BJ.
+                ("A", "S"),  # Dealer 1st card is A.
+                ("7", "8", "D", "H"),  # Player doesn't have BJ.
             ],
         ):
 
@@ -571,12 +571,12 @@ class TestInsurance(unittest.TestCase):
         self.assertEqual(result["phase"], "insurance")
 
     def test_insurance_hands(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('7', '8', 'D', 'H'),
+                ("A", "S"),
+                ("7", "8", "D", "H"),
             ],
         ):
             result = self.game.start_round([500])
@@ -588,27 +588,27 @@ class TestInsurance(unittest.TestCase):
         )  # 500 / 2.
 
     def test_capital_deduction(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('7', '8', 'D', 'H'),
+                ("A", "S"),
+                ("7", "8", "D", "H"),
             ],
         ):
 
             self.game.start_round([500])
 
-        self.game.make_insurance_decision(['1'])
+        self.game.make_insurance_decision(["1"])
         self.assertEqual(self.game.capital, 9250)  # 9500 - 250.
 
     def test_no_insurance_capital(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('7', '8', 'D', 'H'),
+                ("A", "S"),
+                ("7", "8", "D", "H"),
             ],
         ):
 
@@ -618,33 +618,33 @@ class TestInsurance(unittest.TestCase):
         self.assertEqual(self.game.capital, 9500)
 
     def test_phase_after_insurance_decision(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('7', '8', 'D', 'H'),
+                ("A", "S"),
+                ("7", "8", "D", "H"),
             ],
         ):
 
             self.game.start_round([500])
 
-        result = self.game.make_insurance_decision(['1'])
+        result = self.game.make_insurance_decision(["1"])
         self.assertEqual(result["phase"], "playing")
 
     def test_insurance_pays_2_to_1_against_dealer_blackjack(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),  # Dealer 1st card is A.
-                ('10', '8', 'D', 'H'),  # Player doesn't have BJ and buys insurance.
-                ('10', 'C'),  # Dealer draws 10: Ace + 10 = Blackjack.
+                ("A", "S"),  # Dealer 1st card is A.
+                ("10", "8", "D", "H"),  # Player doesn't have BJ and buys insurance.
+                ("10", "C"),  # Dealer draws 10: Ace + 10 = Blackjack.
             ],
         ):
 
             self.game.start_round([500])
-            self.game.make_insurance_decision(['1'])
+            self.game.make_insurance_decision(["1"])
             result = self.game.stand()
 
         # 10000 - 500 (bet) - 250 (insurance) = 9250.
@@ -656,18 +656,18 @@ class TestInsurance(unittest.TestCase):
         self.assertEqual(result["phase"], "settled")
 
     def test_lost_hand_against_dealer_blackjack(self):
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),
-                ('7', '8', 'D', 'H'),
-                ('10', 'C'),
+                ("A", "S"),
+                ("7", "8", "D", "H"),
+                ("10", "C"),
             ],
         ):
 
             self.game.start_round([500])
-            self.game.make_insurance_decision(['1'])
+            self.game.make_insurance_decision(["1"])
             result = self.game.stand()
 
         self.assertEqual(result["hands"][0]["branches"][0]["outcome"], "lost")
@@ -687,7 +687,7 @@ class TestInsurance(unittest.TestCase):
         ):
 
             self.game.start_round([500])
-            self.game.make_insurance_decision(['1'])
+            self.game.make_insurance_decision(["1"])
             result = self.game.stand()
 
         # 10000 - 500 (bet) - 250 (insurance) = 9250.
@@ -698,12 +698,12 @@ class TestInsurance(unittest.TestCase):
 
     def test_insurance_skipped_when_all_hands_are_blackjack(self):
         """Dealer shows Ace but all player hands are BJ: goes to early pay, not insurance."""
-        with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
             self.game.machine,
-            'draw',
+            "draw",
             side_effect=[
-                ('A', 'S'),  # Dealer 1st card is Ace.
-                ('A', 'K', 'D', 'H'),  # Player has Blackjack.
+                ("A", "S"),  # Dealer 1st card is Ace.
+                ("A", "K", "D", "H"),  # Player has Blackjack.
             ],
         ):
 
@@ -713,7 +713,7 @@ class TestInsurance(unittest.TestCase):
         self.assertNotIn("insurance_hands", result)
 
     def test_make_insurance_decision_errors_outside_insurance_phase(self):
-        result = self.game.make_insurance_decision(['1'])
+        result = self.game.make_insurance_decision(["1"])
         self.assertIn("error", result)
 
 
@@ -726,11 +726,11 @@ class TestMultipleRounds(unittest.TestCase):
 
     def test_round_number_increments(self):
         for draws in [
-            [('9', 'S'), ('9', '5', 'D', 'H'), ('K', 'C')],  # Round 1: bust.
-            [('9', 'S'), ('9', '4', 'D', 'H'), ('K', 'C')],  # Round 2: bust.
+            [("9", "S"), ("9", "5", "D", "H"), ("K", "C")],  # Round 1: bust.
+            [("9", "S"), ("9", "4", "D", "H"), ("K", "C")],  # Round 2: bust.
         ]:
-            with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
-                self.game.machine, 'draw', side_effect=draws
+            with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+                self.game.machine, "draw", side_effect=draws
             ):
                 self.game.start_round([500])
                 self.game.hit()
@@ -739,11 +739,11 @@ class TestMultipleRounds(unittest.TestCase):
 
     def test_incomes_accumulate_across_rounds(self):
         for draws in [
-            [('9', 'S'), ('9', '5', 'D', 'H'), ('K', 'C')],  # Round 1: bust.
-            [('9', 'S'), ('9', '4', 'D', 'H'), ('K', 'C')],  # Round 2: bust.
+            [("9", "S"), ("9", "5", "D", "H"), ("K", "C")],  # Round 1: bust.
+            [("9", "S"), ("9", "4", "D", "H"), ("K", "C")],  # Round 2: bust.
         ]:
-            with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
-                self.game.machine, 'draw', side_effect=draws
+            with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+                self.game.machine, "draw", side_effect=draws
             ):
 
                 self.game.start_round([500])
@@ -753,11 +753,11 @@ class TestMultipleRounds(unittest.TestCase):
 
     def test_capital_carries_between_rounds(self):
         for draws in [
-            [('6', 'S'), ('9', '8', 'D', 'H'), ('K', 'C')],
-            [('6', 'S'), ('9', '8', 'D', 'H'), ('K', 'C')],
+            [("6", "S"), ("9", "8", "D", "H"), ("K", "C")],
+            [("6", "S"), ("9", "8", "D", "H"), ("K", "C")],
         ]:
-            with patch.object(self.game.machine, 'load_and_shuffle'), patch.object(
-                self.game.machine, 'draw', side_effect=draws
+            with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+                self.game.machine, "draw", side_effect=draws
             ):
 
                 self.game.start_round([500])
@@ -766,5 +766,149 @@ class TestMultipleRounds(unittest.TestCase):
         self.assertEqual(self.game.capital, 9000)  # Lost 500 twice.
 
 
-if __name__ == '__main__':
+class TestHugeProfitCongrats(unittest.TestCase):
+    """Whole-round ROI congrats popup: fires once at settlement when net profit
+    over total committed chips (bets + doubles/splits + insurance) clears the
+    threshold. Payload rides in final settlement response."""
+
+    def setUp(self):
+        self.game = Blackjack()
+        self.game.new_session("Alice", 10000)
+
+    def test_congrats_on_win(self):
+        # Player 17 stands; dealer 6 draws into bust. Net +500 on 500 staked.
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("9", "8", "D", "H"),  # Player 9 + 8 = 17.
+                ("8", "C"),  # Dealer 6 -> 14.
+                ("9", "D"),  # Dealer 14 -> bust 23.
+            ],
+        ):
+            self.game.start_round([500])
+            result = self.game.stand()
+
+        self.assertIn("congrats", result)
+        self.assertEqual(result["congrats"]["profit_rate"], 100.0)
+
+    def test_congrats_profit_rate_on_blackjack(self):
+        # Player blackjack vs dealer low card auto-pays 1.5x: +750 on 500 staked.
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),  # Dealer shows 6 -> no early pay, auto-pays BJ.
+                ("A", "K", "D", "H"),  # Player blackjack.
+            ],
+        ):
+            result = self.game.start_round([500])
+
+        self.assertEqual(result["phase"], "settled")
+        self.assertIn("congrats", result)
+        self.assertEqual(result["congrats"]["profit_rate"], 150.0)
+
+    def test_denominator_includes_doubled_wager(self):
+        # Double 500 -> 1000 committed; win via dealer bust pays +1000 net.
+        # Rate must be 1000/1000 = 100%, NOT 1000/500 = 200%.
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("5", "6", "D", "H"),  # Player 5 + 6 = 11.
+                ("9", "C"),  # Double draw -> 20.
+                ("8", "D"),  # Dealer 6 -> 14.
+                ("9", "H"),  # Dealer 14 -> bust 23.
+            ],
+        ):
+            self.game.start_round([500])
+            result = self.game.double_down()
+
+        self.assertEqual(self.game.capital, 11000)
+        self.assertIn("congrats", result)
+        self.assertEqual(result["congrats"]["profit_rate"], 100.0)
+
+    def test_no_congrats_on_push(self):
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("K", "9", "D", "H"),  # Player 19.
+                ("K", "C"),  # Dealer 6 -> 16.
+                ("3", "D"),  # Dealer 16 -> 19: push.
+            ],
+        ):
+            self.game.start_round([500])
+            result = self.game.stand()
+
+        self.assertNotIn("congrats", result)
+
+    def test_no_congrats_on_loss(self):
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("K", "S"),
+                ("9", "8", "D", "H"),  # Player 17.
+                ("J", "C"),  # Dealer K -> 20, beats 17: player loses.
+            ],
+        ):
+            self.game.start_round([500])
+            result = self.game.stand()
+
+        self.assertNotIn("congrats", result)
+
+    def test_no_congrats_key_before_settlement(self):
+        # The payload only exists once the whole round is finalized.
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("9", "8", "D", "H"),
+                ("8", "C"),
+                ("9", "D"),
+            ],
+        ):
+            start = self.game.start_round([500])
+            self.assertEqual(start["phase"], "playing")
+            self.assertNotIn("congrats", start)
+
+    def test_congrats_resets_next_round(self):
+        # A huge-profit round followed by a flat round must not leak payload.
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("9", "8", "D", "H"),
+                ("8", "C"),
+                ("9", "D"),
+            ],
+        ):
+            self.game.start_round([500])
+            won = self.game.stand()
+
+        self.assertIn("congrats", won)
+
+        with patch.object(self.game.machine, "load_and_shuffle"), patch.object(
+            self.game.machine,
+            "draw",
+            side_effect=[
+                ("6", "S"),
+                ("K", "9", "D", "H"),  # Player 19.
+                ("K", "C"),  # Dealer 6 -> 16.
+                ("3", "D"),  # Dealer 16 -> 19: push.
+            ],
+        ):
+            self.game.start_round([500])
+            pushed = self.game.stand()
+
+        self.assertNotIn("congrats", pushed)
+
+
+if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,14 @@ const MAX_NAME_LEN = 50;
 const SUIT_SYMBOL = { S: '♠', H: '♥', D: '♦', C: '♣' };
 const SUIT_COLOR  = { S: 'black', H: 'red', D: 'red', C: 'black' };
 
+// Whole-round "huge profit" congrats popup (ported from v1.0.0). The server
+// decides whether it fires (sends `congrats.profit_rate`); these are the
+// display strings only.
+const HUGE_PROFIT_POPUP = {
+  title: '🎉 Huge Profit! 🎉',
+  body: rate => `💵 ${rate}% Profit Rate 🍾`,
+};
+
 // ── State ──────────────────────────────────────────────────────────────────────
 const state = {
   balance: 0,
@@ -86,6 +94,7 @@ function enterBettingPhase() {
   updateBetDisplay();
   renderBalance(state.balance);  // bets reset to 0; restore full balance
   clearTable();
+  hideHugeProfit();
 }
 
 // Build the 1–6 count buttons
@@ -284,7 +293,12 @@ async function updateUI(data) {
     renderHands(data.hands, data.phase);
     showPhase('settled');
     flashRoundResult(data.hands);
-    if (data.capital < MIN_BET) setTimeout(showGameOver, 2500);
+    if (data.capital < MIN_BET) {
+      setTimeout(showGameOver, 2500);
+    } else if (data.congrats) {
+      // One celebratory popup, after the dealer reveal + result flash.
+      setTimeout(() => showHugeProfit(data.congrats.profit_rate), 1800);
+    }
   } else {
     renderDealer(data.dealer);
     renderHands(data.hands, data.phase);
@@ -639,6 +653,17 @@ async function doInsurance() {
 // ── Game over modal ────────────────────────────────────────────────────────────
 function showGameOver() {
   document.getElementById('gameover-modal').style.display = 'flex';
+}
+
+// ── Huge-profit congrats modal ─────────────────────────────────────────────────
+function showHugeProfit(profitRate) {
+  document.getElementById('huge-profit-body').textContent =
+    HUGE_PROFIT_POPUP.body(profitRate);
+  document.getElementById('huge-profit-modal').style.display = 'flex';
+}
+
+function hideHugeProfit() {
+  document.getElementById('huge-profit-modal').style.display = 'none';
 }
 
 // ── GitHub modal ───────────────────────────────────────────────────────────────

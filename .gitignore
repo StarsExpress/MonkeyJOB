@@ -1,4 +1,6 @@
 .claude/
+CLAUDE.md
+
 *.pyc
 __pychache__/
 .pytest_cache/

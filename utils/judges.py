@@ -16,8 +16,8 @@ def judge_blackjack(cards_list: list[str], split: bool = False) -> bool:
     if split:  # No Blackjack if split is conducted.
         return False
 
-    if len(cards_list) == 2 and 'A' in cards_list:
-        if len({'10', 'J', 'Q', 'K'} & set(cards_list)) == 1:
+    if len(cards_list) == 2 and "A" in cards_list:
+        if len({"10", "J", "Q", "K"} & set(cards_list)) == 1:
             return True
 
     return False
@@ -36,7 +36,7 @@ def judge_surrender(cards_list: list[str], dealer_first_card: str, splits: int) 
         bool: True if given hand can be surrendered, False otherwise.
     """
     if len(cards_list) == 2 and splits == 0:
-        if SURRENDER_TO_ACE | (dealer_first_card != 'A'):
+        if SURRENDER_TO_ACE | (dealer_first_card != "A"):
             return True
 
     return False
