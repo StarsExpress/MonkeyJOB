@@ -736,6 +736,12 @@ body {
   gap: 8px;
   justify-content: center;
 }
+.hand-sel-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+}
 .hand-sel-btn {
   display: flex;
   flex-direction: column;

@@ -8,4 +8,5 @@ __pychache__/
 .vscode/
 .DS_Store
 
-node_modules/  # Node tooling (JS lint/format).
+# Node tooling (JS lint/format).
+node_modules/

@@ -16,12 +16,14 @@
 
 ### 🛰️ Metadata
 
-[![main Unit Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
-[![main Component Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/component_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
+[![Latest Release](https://img.shields.io/github/v/release/StarsExpress/MonkeyJOB)](https://github.com/StarsExpress/MonkeyJOB/releases)
 [![main Integration Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
+
+[![main Component Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/component_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
+[![main Unit Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
+
 [![main Black Lint](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/black-lint.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
 [![main JavaScript Lint](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/javascript-lint.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
-[![Latest Release](https://img.shields.io/github/v/release/StarsExpress/MonkeyJOB)](https://github.com/StarsExpress/MonkeyJOB/releases)
 
 ---
 
