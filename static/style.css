@@ -1070,6 +1070,16 @@ body {
    top bar into one slim row and trim vertical padding on the table zones.
    Desktop, tablet, and portrait layouts are untouched. */
 @media (orientation: landscape) and (max-height: 480px) {
+  /* Vertical sizes scale with the usable height (dvh), so the whole stack
+     compresses together between ~283px (Safari with chrome) and ~393px
+     (standalone PWA). Clamps keep the PWA look near 393px. */
+  :root {
+    --card-h: clamp(40px, 14.8dvh, 58px);
+    --pad-top: clamp(2px, 1.4dvh, 6px);
+    --pad-bot: clamp(2px, 1dvh, 4px);
+    --gap-sm: clamp(2px, 1.2dvh, 5px);
+  }
+
   /* Top bar → one tight single row */
   .topbar { padding: 4px 14px; }
   .topbar-title {
@@ -1086,9 +1096,9 @@ body {
   .nav-btn { font-size: 0.62rem; padding: 3px 9px; }
 
   /* Reclaim vertical room so a 6-hand deal fits without scrolling */
-  .dealer-zone { padding: 6px 0 4px; }
-  .dealer-zone .zone-label { margin-bottom: 4px; }
-  .dealer-value-badge { margin-top: 5px; }
+  .dealer-zone { padding: var(--pad-top) 0 var(--pad-bot); }
+  .dealer-zone .zone-label { margin-bottom: var(--pad-bot); }
+  .dealer-value-badge { margin-top: var(--gap-sm); }
 
   /* Keep the player hands fully ABOVE the bottom action area. The action
      bar is slimmed to a small fixed height, and the player region plus its
@@ -1097,24 +1107,56 @@ body {
   .action-zone { padding: 6px 24px 8px; gap: 6px; }
   .action-btn { padding: 7px 16px; font-size: 0.72rem; min-width: 74px; }
 
-  .player-zone { padding: 2px 16px 6px; justify-content: flex-start; }
-  .player-zone .zone-label { margin-bottom: 4px; }
+  .player-zone { padding: var(--pad-bot) 16px var(--pad-bot); justify-content: flex-start; }
+  .player-zone .zone-label { margin-bottom: var(--pad-bot); }
+  .hand-group { gap: var(--pad-bot); }
   .hands-row { padding-bottom: 0; }
   .hand-group-label { font-size: 0.54rem; }
-  .hand-card { min-width: 104px; padding: 4px 10px 5px; gap: 3px; }
+  .hand-card { min-width: 104px; padding: var(--gap-sm) 10px var(--gap-sm); gap: 3px; }
   .hand-label { font-size: 0.54rem; }
-  .hand-cards-row { height: 58px; }
+  .hand-cards-row { height: var(--card-h); }
   .hand-info { margin-top: 0; gap: 8px; }
   .hand-value { font-size: 0.95rem; }
   .bet-badge { font-size: 0.58rem; padding: 2px 6px; }
   .profit-badge { font-size: 0.62rem; padding: 2px 7px; }
 
   /* Smaller cards (dealer + player) so a full hand fits vertically */
-  .card { width: 40px; height: 58px; padding: 3px 4px; }
+  .card { width: calc(var(--card-h) * 0.69); height: var(--card-h); padding: 3px 4px; }
   .card-rank, .card-rank-bot { font-size: 0.58rem; }
   .card-suit { font-size: 0.8rem; }
   .card + .card { margin-left: -12px; }
   .dealer-hand { gap: 6px; }
+
+  /* Felt arc: drop it to sit just under the hand row, so it no longer
+     crosses the hand values and bets. The arc's top is kept ~9px above the
+     table bottom, which is where the action bar starts. */
+  .table::after { bottom: -31px; height: 40px; }
+
+  /* "YOUR TURN" moves from a pill that overlaps "HAND N" to the hand label
+     itself, so the label row carries the cue and nothing overlaps. The gold
+     border on the active card still marks it too. */
+  .hand-card.active::before { display: none; }
+  .hand-group:has(.hand-card.active) .hand-group-label { color: var(--gold); }
+  .hand-group:has(.hand-card.active) .hand-group-label::after { content: ' · YOUR TURN'; }
+
+  /* Early-pay and insurance prompts: one compact row (message | choices |
+     buttons) instead of a stack, so the action zone stays below the hands. */
+  .action-zone { padding: 6px 24px 8px; gap: 6px; }
+  .early-pay-panel,
+  .insurance-phase-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 14px;
+  }
+  .early-pay-info,
+  .insurance-phase-info { font-size: 0.66rem; text-align: left; line-height: 1.3; }
+  .early-pay-info strong,
+  .insurance-phase-info strong { font-size: 0.75rem; }
+  .insurance-toggles { gap: 6px; }
+  .ins-toggle-btn { flex-direction: row; gap: 6px; padding: 2px 10px; font-size: 0.6rem; }
+  .action-btn { padding: 4px 12px; font-size: 0.66rem; min-width: 0; }
 
   /* ── INTRO / SESSION OVERLAY → two columns ──
      Height is the scarce dimension here, so lay the logo and the form
@@ -1156,4 +1198,15 @@ body {
   .session-field input { font-size: 0.85rem; padding: 7px 12px; }
   .session-error { font-size: 0.66rem; min-height: 0.8em; }
   .session-submit { padding: 9px; font-size: 0.82rem; margin-top: 2px; }
+}
+
+/* Very short screens (Safari with address/tab bars, ~283px usable). Drop
+   the non-essential per-branch "Branch N" label and tighten the hand card,
+   so the hands stay clear of the action bar. Does not apply at ~393px. */
+@media (orientation: landscape) and (max-height: 320px) {
+  .hand-label { display: none; }
+  .hand-card { gap: 2px; padding: 2px 8px; }
+  .hand-value { font-size: 0.85rem; }
+  .dealer-value-badge { margin-top: 2px; padding: 2px 10px; }
+  .dealer-zone { padding-top: 2px; }
 }

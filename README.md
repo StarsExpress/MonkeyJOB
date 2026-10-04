@@ -12,6 +12,8 @@
 [![macOS](https://img.shields.io/badge/macOS-A2AAAD?style=for-the-badge&logo=apple&logoColor=black)](https://www.jack-s-onlineblackjack.com)
 [![Windows](https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://www.jack-s-onlineblackjack.com)
 
+---
+
 ### 🛰️ Metadata
 
 [![main Unit Tests](https://github.com/StarsExpress/MonkeyJOB/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/StarsExpress/MonkeyJOB/actions)
