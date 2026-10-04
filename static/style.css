@@ -1084,7 +1084,32 @@ body {
   .dealer-zone { padding: 6px 0 4px; }
   .dealer-zone .zone-label { margin-bottom: 4px; }
   .dealer-value-badge { margin-top: 5px; }
-  .player-zone { padding-top: 4px; }
+
+  /* Keep the player hands fully ABOVE the bottom action area. The action
+     bar is slimmed to a small fixed height, and the player region plus its
+     cards are scaled down to fit the space that leaves, so no card bottom
+     sinks behind the curve / action bar. */
+  .action-zone { padding: 6px 24px 8px; gap: 6px; }
+  .action-btn { padding: 7px 16px; font-size: 0.72rem; min-width: 74px; }
+
+  .player-zone { padding: 2px 16px 6px; justify-content: flex-start; }
+  .player-zone .zone-label { margin-bottom: 4px; }
+  .hands-row { padding-bottom: 0; }
+  .hand-group-label { font-size: 0.54rem; }
+  .hand-card { min-width: 104px; padding: 4px 10px 5px; gap: 3px; }
+  .hand-label { font-size: 0.54rem; }
+  .hand-cards-row { height: 58px; }
+  .hand-info { margin-top: 0; gap: 8px; }
+  .hand-value { font-size: 0.95rem; }
+  .bet-badge { font-size: 0.58rem; padding: 2px 6px; }
+  .profit-badge { font-size: 0.62rem; padding: 2px 7px; }
+
+  /* Smaller cards (dealer + player) so a full hand fits vertically */
+  .card { width: 40px; height: 58px; padding: 3px 4px; }
+  .card-rank, .card-rank-bot { font-size: 0.58rem; }
+  .card-suit { font-size: 0.8rem; }
+  .card + .card { margin-left: -12px; }
+  .dealer-hand { gap: 6px; }
 
   /* ── INTRO / SESSION OVERLAY → two columns ──
      Height is the scarce dimension here, so lay the logo and the form
